@@ -14,8 +14,8 @@
     "environmentType": {
       "value": "prod"
     },
-    "targetEnvironment": {
-      "value": "Prod"
+    "environmentName": {
+      "value": "Stag"
     }
   }
 }
