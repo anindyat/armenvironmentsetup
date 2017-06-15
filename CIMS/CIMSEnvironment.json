@@ -25,7 +25,8 @@
       "defaultValue": "US",
       "allowedValues": [
         "US",
-        "EU"
+        "EU",
+        "CA"
       ]
     },
     "hostingPlanName": {
