@@ -16,6 +16,9 @@
     },
     "environmentName": {
       "value": "Stag"
+    },
+    "enableNonSslPort": {
+      "value": true
     }
   }
 }

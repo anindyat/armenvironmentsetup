@@ -2,6 +2,63 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "redisCacheSKU": {
+      "type": "string",
+      "allowedValues": [
+        "Basic",
+        "Standard"
+      ],
+      "defaultValue": "Standard",
+      "metadata": {
+        "description": "The pricing tier of the new Azure Redis Cache."
+      }
+    },
+    "redisCacheFamily": {
+      "type": "string",
+      "defaultValue": "C",
+      "metadata": {
+        "description": "The family for the sku."
+      }
+    },
+    "redisCacheCapacity": {
+      "type": "int",
+      "allowedValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "defaultValue": 1,
+      "metadata": {
+        "description": "The size of the new Azure Redis Cache instance. "
+      }
+    },
+    //"existingDiagnosticsStorageAccountName": {
+    //  "type": "string",
+    //  "metadata": {
+    //    "description": "Existing storage account for diagnostics."
+    //  }
+    //},
+    "enableNonSslPort": {
+      "type": "bool",
+      "metadata": {
+        "description": "A boolean value that indicates whether to allow access via non-SSL ports."
+      }
+    },
+    //"diagnosticsStatus": {
+    //  "type": "string",
+    //  "defaultValue": "ON",
+    //  "allowedValues": [
+    //    "ON",
+    //    "OFF"
+    //  ],
+    //  "metadata": {
+    //    "description": "A value that indicates whether diagnostices is enabled. Use ON or OFF."
+    //  }
+    //},
     "environmentType": {
       "type": "string",
       "defaultValue": "basic",
@@ -278,12 +335,42 @@
     "resourceNameSuffix": "[concat(parameters('environmentName'),'-',variables('otisApplicationName'),'-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "otisApplicationName": "CIMS",
     "appServicePlanName": "[concat('ASP-',variables('resourceNameSuffix'))]",
-    "webSiteName": "[concat('WA-', uniqueString(resourceGroup().id))]",
+    "webSiteName": "[concat('WA-', variables('resourceNameSuffix'))]",
     "sqlserverName": "[toLower(concat('SQLS-',variables('resourceNameSuffix')))]",
+    "redisCacheName": "[concat('RC-',variables('resourceNameSuffix'))]",
     "iotApiVersion": "2016-02-03",
     "iotHubName": "[concat('IH-',variables('resourceNameSuffix'))]"
   },
   "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('redisCacheName')]",
+      "type": "Microsoft.Cache/Redis",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "enableNonSslPort": "[parameters('enableNonSslPort')]",
+        "sku": {
+          "capacity": "[parameters('redisCacheCapacity')]",
+          "family": "[parameters('redisCacheFamily')]",
+          "name": "[parameters('redisCacheSKU')]"
+        }
+      },
+      //"resources": [
+      //  {
+      //    "apiVersion": "2015-07-01",
+      //    "type": "Microsoft.Cache/redis/providers/diagnosticsettings",
+      //    "name": "[concat(variables('redisCacheName'), '/Microsoft.Insights/service')]",
+      //    "location": "[resourceGroup().location]",
+      //    "dependsOn": [
+      //      "[concat('Microsoft.Cache/Redis/', variables('redisCacheName'))]"
+      //    ],
+      //    "properties": {
+      //      "status": "[parameters('diagnosticsStatus')]",
+      //      "storageAccountName": "[parameters('existingDiagnosticsStorageAccountName')]"
+      //    }
+      //  }
+      //]
+    },
     {
       "name": "[variables('sqlserverName')]",
       "type": "Microsoft.Sql/servers",
