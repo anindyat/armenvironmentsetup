@@ -19,6 +19,9 @@
     },
     "enableNonSslPort": {
       "value": true
+    },
+    "serviceBusTopicName": {
+      "value": "sbtopicpractice"
     }
   }
 }

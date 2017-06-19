@@ -1,0 +1,64 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "serviceBusTopicName": {
+      "type": "string",
+      "metadata": {
+        "description": "Comma seperated Topic Names"
+      }
+    },
+    "environmentName": {
+      "type": "string",
+      "defaultValue": "Dev",
+      "allowedValues": [
+        "Dev",
+        "QA",
+        "Prod",
+        "Stag"
+      ]
+    },
+    "otisTargetRegion": {
+      "type": "string",
+      "defaultValue": "US",
+      "allowedValues": [
+        "US",
+        "EU",
+        "CA"
+      ]
+    }
+  },
+  "variables": {
+    "resourceNameSuffix": "[concat(parameters('environmentName'),'-',variables('otisApplicationName'),'-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
+    "otisApplicationName": "CIMS",
+    "serviceBusNamespaceName": "[concat('SB-',variables('resourceNameSuffix'))]",
+    "TopicNames": "[split(parameters('serviceBusTopicName'), ',')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('serviceBusNamespaceName')]",
+      "type": "Microsoft.ServiceBus/namespaces",
+      "location": "[resourceGroup().location]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(variables('serviceBusNamespaceName'), '/', variables('TopicNames')[copyIndex()])]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "dependsOn": [
+        "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
+      ],
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "TopicNameCopy",
+        "count": "[length(variables('TopicNames'))]"
+      },
+      "properties": {
+        "path": "[variables('TopicNames')[copyIndex()]]"
+      }
+    }
+  ],
+  "outputs": {}
+}
