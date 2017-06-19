@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "CIMS", "CIMS\CIMS.deployproj", "{65B2EF0E-57C7-461E-A6F9-144CAB34AB5A}"
 EndProject
-Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "CIMS-Testing", "AzureResourceGroup1\CIMS-Testing.deployproj", "{9AF0760B-02EE-48EA-870A-D71A44B12B88}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{65B2EF0E-57C7-461E-A6F9-144CAB34AB5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{65B2EF0E-57C7-461E-A6F9-144CAB34AB5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{65B2EF0E-57C7-461E-A6F9-144CAB34AB5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9AF0760B-02EE-48EA-870A-D71A44B12B88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9AF0760B-02EE-48EA-870A-D71A44B12B88}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9AF0760B-02EE-48EA-870A-D71A44B12B88}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9AF0760B-02EE-48EA-870A-D71A44B12B88}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
