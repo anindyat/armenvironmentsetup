@@ -354,7 +354,7 @@
           "family": "[parameters('redisCacheFamily')]",
           "name": "[parameters('redisCacheSKU')]"
         }
-      },
+      }
       //"resources": [
       //  {
       //    "apiVersion": "2015-07-01",
@@ -562,7 +562,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": []
+          "customEmails": [ ]
         }
       }
     },
@@ -596,7 +596,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": []
+          "customEmails": [ ]
         }
       }
     },
@@ -630,7 +630,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": []
+          "customEmails": [ ]
         }
       }
     },
@@ -664,7 +664,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": []
+          "customEmails": [ ]
         }
       }
     },
@@ -725,5 +725,15 @@
       "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups"
 
     }
-  ]
+  ],
+  "outputs": {
+    "sqlserverName": {
+      "type": "string",
+      "value": "[variables('sqlserverName')]"
+    },
+    "webSiteName": {
+      "type": "string",
+      "value": "[variables('webSiteName')]"
+    }
+  }
 }

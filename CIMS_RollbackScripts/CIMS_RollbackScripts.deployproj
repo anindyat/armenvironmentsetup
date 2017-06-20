@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>65b2ef0e-57c7-461e-a6f9-144cab34ab5a</ProjectGuid>
+    <ProjectGuid>bd3ba15d-9f96-4215-b18f-4b690e414a40</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
     <TargetFrameworkIdentifier>Deployment</TargetFrameworkIdentifier>
@@ -25,15 +25,16 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
+    <Folder Include="OutputFiles\" />
+    <Folder Include="Templates\" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
-    <Content Include="Deploy-AzureResourceGroup.ps1" />
-    <Content Include="CIMSEnvironment.json" />
-    <Content Include="CIMSEnvironment.parameters.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="OutputFiles\" />
+    <Content Include="Remove-AzureResourceGroup.ps1" />
+    <Content Include="Templates\azuredeploy.json" />
+    <Content Include="Templates\azuredeploy.parameters.json" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
