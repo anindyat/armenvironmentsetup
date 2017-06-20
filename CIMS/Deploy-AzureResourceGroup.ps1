@@ -92,7 +92,7 @@ if ($UploadArtifacts) {
 }
 
 # Create or update the resource group using the specified template file and template parameters file
-New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force
+New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force 2>> .\CIMS\OutputFiles\errorCIMS_RG.txt | Out-File .\CIMS\OutputFiles\rgDetailsCIMS_RG.txt 
 
 if ($ValidateOnly) {
     $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
@@ -113,6 +113,7 @@ else {
                                        -TemplateParameterFile $TemplateParametersFile `
                                        @OptionalParameters `
                                        -Force -Verbose `
+									   2>> E:\Poc\PocOnOutPut\outputScripts\error.txt | Out-File E:\Poc\PocOnOutPut\outputScripts\test.txt `
                                        -ErrorVariable ErrorMessages
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
