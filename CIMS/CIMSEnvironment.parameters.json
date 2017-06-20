@@ -17,8 +17,11 @@
     "environmentName": {
       "value": "Stag"
     },
-    "enableNonSslPort": {
-      "value": true
+    "redisCacheType": {
+      "value": "basic"
+    },
+    "serviceBusTopicName": {
+      "value": "sbtopicpractice"
     }
   }
 }

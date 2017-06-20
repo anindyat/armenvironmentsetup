@@ -2,52 +2,12 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "redisCacheSKU": {
-      "type": "string",
-      "allowedValues": [
-        "Basic",
-        "Standard"
-      ],
-      "defaultValue": "Standard",
-      "metadata": {
-        "description": "The pricing tier of the new Azure Redis Cache."
-      }
-    },
-    "redisCacheFamily": {
-      "type": "string",
-      "defaultValue": "C",
-      "metadata": {
-        "description": "The family for the sku."
-      }
-    },
-    "redisCacheCapacity": {
-      "type": "int",
-      "allowedValues": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
-      ],
-      "defaultValue": 1,
-      "metadata": {
-        "description": "The size of the new Azure Redis Cache instance. "
-      }
-    },
     //"existingDiagnosticsStorageAccountName": {
     //  "type": "string",
     //  "metadata": {
     //    "description": "Existing storage account for diagnostics."
     //  }
     //},
-    "enableNonSslPort": {
-      "type": "bool",
-      "metadata": {
-        "description": "A boolean value that indicates whether to allow access via non-SSL ports."
-      }
-    },
     //"diagnosticsStatus": {
     //  "type": "string",
     //  "defaultValue": "ON",
@@ -84,6 +44,29 @@
         "US",
         "EU",
         "CA"
+      ]
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {
+        "Environment Name": "Dev",
+        "Otis Region": "US",
+        "Application": "CIMS"
+      }
+    },
+    "serviceBusTopicName": {
+      "type": "string",
+      "metadata": {
+        "description": "Comma seperated Topic Names"
+      }
+    },
+    "redisCacheType": {
+      "type": "string",
+      "defaultValue": "basic",
+      "allowedValues": [
+        "basic",
+        "standard",
+        "prod"
       ]
     },
     "hostingPlanName": {
@@ -332,12 +315,32 @@
       }
     },
     "currentEnvironmentSettings": "[variables('environmentSettings')[parameters('environmentType')]]",
+    "redisCacheSettings": {
+      "basic": {
+        "redisCapacity": 1,
+        "redisFamily": "C",
+        "redisName": "Basic"
+      },
+      "standard": {
+        "redisCapacity": 1,
+        "redisFamily": "C",
+        "redisName": "Standard"
+      },
+      "prod": {
+        "redisCapacity": 1,
+        "redisFamily": "P",
+        "redisName": "Premium"
+      }
+    },
+    "currentRedisCacheSettings": "[variables('redisCacheSettings')[parameters('redisCacheType')]]",
     "resourceNameSuffix": "[concat(parameters('environmentName'),'-',variables('otisApplicationName'),'-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "otisApplicationName": "CIMS",
     "appServicePlanName": "[concat('ASP-',variables('resourceNameSuffix'))]",
     "webSiteName": "[concat('WA-', variables('resourceNameSuffix'))]",
     "sqlserverName": "[toLower(concat('SQLS-',variables('resourceNameSuffix')))]",
     "redisCacheName": "[concat('RC-',variables('resourceNameSuffix'))]",
+    "serviceBusNamespaceName": "[concat('SB-',variables('resourceNameSuffix'))]",
+    "TopicNames": "[split(parameters('serviceBusTopicName'), ',')]",
     "iotApiVersion": "2016-02-03",
     "iotHubName": "[concat('IH-',variables('resourceNameSuffix'))]"
   },
@@ -347,37 +350,49 @@
       "name": "[variables('redisCacheName')]",
       "type": "Microsoft.Cache/Redis",
       "location": "[resourceGroup().location]",
+      "tags": "[parameters('tagValues')]",
       "properties": {
-        "enableNonSslPort": "[parameters('enableNonSslPort')]",
+        "enableNonSslPort": false,
         "sku": {
-          "capacity": "[parameters('redisCacheCapacity')]",
-          "family": "[parameters('redisCacheFamily')]",
-          "name": "[parameters('redisCacheSKU')]"
+          "capacity": "[variables('currentRedisCacheSettings').redisCapacity]",
+          "family": "[variables('currentRedisCacheSettings').redisFamily]",
+          "name": "[variables('currentRedisCacheSettings').redisName]"
         }
       }
-      //"resources": [
-      //  {
-      //    "apiVersion": "2015-07-01",
-      //    "type": "Microsoft.Cache/redis/providers/diagnosticsettings",
-      //    "name": "[concat(variables('redisCacheName'), '/Microsoft.Insights/service')]",
-      //    "location": "[resourceGroup().location]",
-      //    "dependsOn": [
-      //      "[concat('Microsoft.Cache/Redis/', variables('redisCacheName'))]"
-      //    ],
-      //    "properties": {
-      //      "status": "[parameters('diagnosticsStatus')]",
-      //      "storageAccountName": "[parameters('existingDiagnosticsStorageAccountName')]"
-      //    }
-      //  }
-      //]
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[variables('serviceBusNamespaceName')]",
+      "type": "Microsoft.ServiceBus/namespaces",
+      "location": "[resourceGroup().location]",
+      "tags": "[parameters('tagValues')]",
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[concat(variables('serviceBusNamespaceName'), '/', variables('TopicNames')[copyIndex()])]",
+      "type": "Microsoft.ServiceBus/namespaces/topics",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
+      ],
+      "copy": {
+        "name": "TopicNameCopy",
+        "count": "[length(variables('TopicNames'))]"
+      },
+      "properties": {
+        "path": "[variables('TopicNames')[copyIndex()]]"
+      }
     },
     {
       "name": "[variables('sqlserverName')]",
       "type": "Microsoft.Sql/servers",
       "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "SqlServer"
-      },
+      "tags": "[parameters('tagValues')]",
+      //"tags": {
+      //  "displayName": "SqlServer",
+      //},
       "apiVersion": "2014-04-01-preview",
       "properties": {
         "administratorLogin": "[parameters('administratorLogin')]",
@@ -422,9 +437,10 @@
       "name": "[variables('appServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "HostingPlan"
-      },
+      //"tags": {
+      //  "displayName": "HostingPlan",
+      //  "tags": "[parameters('tagValues')]"
+      //},
       "sku": {
         "name": "[parameters('skuName')]",
         "capacity": "[parameters('skuCapacity')]"
@@ -562,7 +578,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": [ ]
+          "customEmails": []
         }
       }
     },
@@ -596,7 +612,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": [ ]
+          "customEmails": []
         }
       }
     },
@@ -630,7 +646,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": [ ]
+          "customEmails": []
         }
       }
     },
@@ -664,7 +680,7 @@
         "action": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleEmailAction",
           "sendToServiceOwners": true,
-          "customEmails": [ ]
+          "customEmails": []
         }
       }
     },
@@ -715,23 +731,15 @@
     {
 
       "apiVersion": "[variables('iotApiVersion')]",
-
       "dependsOn": [
-
         "[concat('Microsoft.Devices/iothubs/', variables('iotHubName'))]"
-
       ],
       "name": "[concat(variables('iotHubName'), '/events/',parameters('d2cConsumerGroupName'))]",
       "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups"
-
     }
   ],
   "outputs": {
-    "sqlserverName": {
-      "type": "string",
-      "value": "[variables('sqlserverName')]"
-    },
-    "webSiteName": {
+    "siteUri": {
       "type": "string",
       "value": "[variables('webSiteName')]"
     }
