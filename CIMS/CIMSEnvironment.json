@@ -73,35 +73,44 @@
       "type": "string",
       "minLength": 1
     },
-    "skuName": {
+    "webAppType": {
       "type": "string",
-      "defaultValue": "F1",
+      "defaultValue": "basic",
       "allowedValues": [
-        "F1",
-        "D1",
-        "B1",
-        "B2",
-        "B3",
-        "S1",
-        "S2",
-        "S3",
-        "P1",
-        "P2",
-        "P3",
-        "P4"
-      ],
-      "metadata": {
-        "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
-      }
+        "basic",
+        "standard",
+        "prod"
+      ]
     },
-    "skuCapacity": {
-      "type": "int",
-      "defaultValue": 1,
-      "minValue": 1,
-      "metadata": {
-        "description": "Describes plan's instance count"
-      }
-    },
+    //"skuName": {
+    //  "type": "string",
+    //  "defaultValue": "F1",
+    //  "allowedValues": [
+    //    "F1",
+    //    "D1",
+    //    "B1",
+    //    "B2",
+    //    "B3",
+    //    "S1",
+    //    "S2",
+    //    "S3",
+    //    "P1",
+    //    "P2",
+    //    "P3",
+    //    "P4"
+    //  ],
+    //  "metadata": {
+    //    "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+    //  }
+    //},
+    //"skuCapacity": {
+    //  "type": "int",
+    //  "defaultValue": 1,
+    //  "minValue": 1,
+    //  "metadata": {
+    //    "description": "Describes plan's instance count"
+    //  }
+    //},
     "administratorLogin": {
       "type": "string"
     },
@@ -333,6 +342,21 @@
       }
     },
     "currentRedisCacheSettings": "[variables('redisCacheSettings')[parameters('redisCacheType')]]",
+    "webAppSettings": {
+      "basic": {
+        "webAppCapacity": 1,
+        "webAppName": "B1"
+      },
+      "standard": {
+        "webAppCapacity": 1,
+        "webAppName": "S1"
+      },
+      "prod": {
+        "webAppCapacity": 1,
+        "webAppName": "P1"
+      }
+    },
+    "currentWebAppSettings": "[variables('webAppSettings')[parameters('webAppType')]]",
     "resourceNameSuffix": "[concat(parameters('environmentName'),'-',variables('otisApplicationName'),'-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "otisApplicationName": "CIMS",
     "appServicePlanName": "[concat('ASP-',variables('resourceNameSuffix'))]",
@@ -442,8 +466,8 @@
       //  "tags": "[parameters('tagValues')]"
       //},
       "sku": {
-        "name": "[parameters('skuName')]",
-        "capacity": "[parameters('skuCapacity')]"
+        "name": "[variables('currentWebAppSettings').webAppName]",
+        "capacity": "[variables('currentWebAppSettings').webAppCapacity]"
       },
       "properties": {
         "name": "[variables('appServicePlanName')]"
@@ -742,6 +766,22 @@
     "siteUri": {
       "type": "string",
       "value": "[variables('webSiteName')]"
+    },
+    "redisCache": {
+      "type": "object",
+      "value": "[reference(variables('redisCacheName'))]"
+    },
+    "serviceBus": {
+      "type": "object",
+      "value": "[reference(variables('serviceBusNamespaceName'))]"
+    },
+    "sqlServer": {
+      "type": "object",
+      "value": "[reference(variables('sqlserverName'))]"
+    },
+    "DatabaseConnectionString": {
+      "type": "string",
+      "value": "[concat('Server=tcp:',reference(variables('sqlserverName')).fullyQualifiedDomainName,',1433;Initial Catalog=',parameters('databaseName'),';Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     }
   }
 }

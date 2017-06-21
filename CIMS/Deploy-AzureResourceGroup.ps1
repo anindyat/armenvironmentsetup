@@ -139,7 +139,8 @@ else {
                                        -TemplateParameterFile $TemplateParametersFile `
                                        @OptionalParameters `
                                        -Force -Verbose `
-                                       -ErrorVariable ErrorMessages 2>> .\CIMS\OutputFiles\errorCIMS.txt | Out-File .\CIMS\OutputFiles\rgDetailsCIMS.txt 
+									   2>> E:\Poc\PocOnOutPut\outputScripts\error.txt | Out-File E:\Poc\PocOnOutPut\outputScripts\test.txt `
+                                       -ErrorVariable ErrorMessages
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
     }
