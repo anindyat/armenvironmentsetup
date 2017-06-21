@@ -1,9 +1,22 @@
+
 #Requires -Version 3.0
 #Requires -Module AzureRM.Resources
 #Requires -Module Azure.Storage
+################################## 
+ 
+# Authenticate w/ Certificate   
+
+#Get the publishSettingFile from the portal
+
+# Get-AzurePublishSettingsFile 
+
+
+################################## 
 
 Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
+    [string] [Parameter(Mandatory=$true)] $PublishSettingsFileNameWithPath,
+    [string] [Parameter(Mandatory=$true)] $SubscriptionName, 
     [string] $ResourceGroupName = 'IoTEnvSetup',
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
@@ -14,6 +27,19 @@ Param(
     [string] $DSCSourceFolder = 'DSC',
     [switch] $ValidateOnly
 )
+
+
+Import-AzurePublishSettingsFile –PublishSettingsFile $PublishSettingsFileNameWithPath 
+
+################################## 
+ 
+# Set Default Subscription 
+Get-AzureSubscription
+Set-AzureSubscription -SubscriptionName $SubscriptionName 
+Select-AzureSubscription -SubscriptionName $SubscriptionName  #Set Default 
+ 
+################################## 
+
 
 try {
     [Microsoft.Azure.Common.Authentication.AzureSession]::ClientFactory.AddUserAgent("VSAzureTools-$UI$($host.name)".replace(' ','_'), '3.0.0')
