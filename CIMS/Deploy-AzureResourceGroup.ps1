@@ -18,6 +18,8 @@ Param(
     [string] [Parameter(Mandatory=$true)] $PublishSettingsFileNameWithPath,
     [string] [Parameter(Mandatory=$true)] $SubscriptionName, 
     [string] $ResourceGroupName = 'IoTEnvSetup',
+    [string] $LogFileName = '.\CIMS\OutputFiles\errorTest.txt',
+    [string] $AzureAuthFilePath,
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
@@ -29,7 +31,7 @@ Param(
 )
 
 
-Import-AzurePublishSettingsFile –PublishSettingsFile $PublishSettingsFileNameWithPath 
+Import-AzurePublishSettingsFile –PublishSettingsFile $PublishSettingsFileNameWithPath
 
 ################################## 
  
@@ -139,7 +141,7 @@ else {
                                        -TemplateParameterFile $TemplateParametersFile `
                                        @OptionalParameters `
                                        -Force -Verbose `
-									   2>> E:\Poc\PocOnOutPut\outputScripts\error.txt | Out-File E:\Poc\PocOnOutPut\outputScripts\test.txt `
+									   2>> .\CIMS\OutputFiles\error.txt | Out-File .\CIMS\OutputFiles\test.txt `
                                        -ErrorVariable ErrorMessages
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
