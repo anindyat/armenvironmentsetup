@@ -767,27 +767,27 @@
       "value": "[reference(resourceId('Microsoft.Web/sites',variables('webSiteName')))]",
       "type": "object"
     },
-    "webAppConnectionString": {
+    "webAppConnectionString=": {
       "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
       "type": "string"
     },
-    "redisCache": {
+    "redisCache=": {
       "type": "object",
       "value": "[reference(variables('redisCacheName'))]"
     },
-    "serviceBus": {
+    "serviceBus=": {
       "type": "object",
       "value": "[reference(variables('serviceBusNamespaceName'))]"
     },
-    "sqlServer": {
+    "sqlServer=": {
       "type": "object",
       "value": "[reference(variables('sqlserverName'))]"
     },
-    "DatabaseConnectionString": {
+    "DatabaseConnectionString=": {
       "type": "string",
       "value": "[concat('Server=tcp:',reference(variables('sqlserverName')).fullyQualifiedDomainName,',1433;Initial Catalog=',parameters('databaseName'),';Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     },
-    "iotHub": {
+    "iotHub=": {
       "value": "[reference(resourceId('Microsoft.Devices/IoTHubs',variables('iotHubName')))]",
       "type": "object"
     }

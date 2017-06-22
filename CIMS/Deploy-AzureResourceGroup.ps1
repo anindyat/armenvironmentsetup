@@ -15,11 +15,13 @@
 
 Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] [Parameter(Mandatory=$true)] $PublishSettingsFileNameWithPath,
-    [string] [Parameter(Mandatory=$true)] $SubscriptionId, 
+    #[string] [Parameter(Mandatory=$true)] $PublishSettingsFileNameWithPath,
+    #[string] [Parameter(Mandatory=$true)] $SubscriptionId, 
     [string] $ResourceGroupName = 'IoTEnvSetup',
-    [string] $LogFileName = '.\errorTest.txt',
-    [string] $AzureAuthFilePath,
+    [string] $LogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-dd).txt",
+    [string] $ErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-dd).txt",
+    [string] $OutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-dd).txt",
+    [string] $ContextFilePath = "$pwd\ProfileContext.ctx",
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
@@ -30,42 +32,18 @@ Param(
     [switch] $ValidateOnly
 )
 
-Get-AzureAccount | ForEach-Object { Remove-AzureAccount $_.ID -Force } 
 
-try {
-Import-AzurePublishSettingsFile –PublishSettingsFile $PublishSettingsFileNameWithPath
-}
-Catch [System.Exception]
-{
-    if ($_.Exception.Message -eq "Your Azure credentials have not been set up or have expired, please run Login-AzureRMAccount to set up your Azure credentials." –or $_.Exception.Message.Contains("Run Login-AzureRmAccount to login."))
-    {
-        Login-AzureRmAccount
+Add-AzureRmAccount
 
-        Save-AzureRmProfile -Path $PublishSettingsFileNameWithPath
+Get-AzureRmContext
 
-        Write-Host "Azure account set, re-run script to continue."
+$SubscriptionId = Read-Host -Prompt "Subscription ID"
 
-# you can write goto statement, if you wish to continue the script.
-    }
-    else
-    {
-        Write-Host $_.Exception.Message
+Set-AzureRmContext -SubscriptionId $SubscriptionId
 
-        Write-Host $_.Exception
-         
-        [DateTime]::Now.ToString() + " - Failed with error:  $_.Exception.Message"  | Out-File $LogFileName -Append
-    } 
-}
+Save-AzureRmContext -Path $ContextFilePath -Force
 
-
-################################## 
- 
-# Set Default Subscription 
-# Get-AzureRMSubscription
-# Set-AzureRMSubscription -SubscriptionId $SubscriptionId 
-Select-AzureRMSubscription -SubscriptionId $SubscriptionId #Set Default 
- 
-################################## 
+Import-AzureRmContext -Path $ContextFilePath
 
 
 try {
@@ -145,7 +123,7 @@ if ($UploadArtifacts) {
 }
 
 # Create or update the resource group using the specified template file and template parameters file
-New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force 2>> .\errorCIMS_RG.txt | Out-File .\rgDetailsCIMS_RG.txt 
+#New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force 2>> $ErrorFileName | Out-File $LogFileName
 
 if ($ValidateOnly) {
     $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
@@ -166,7 +144,7 @@ else {
                                        -TemplateParameterFile $TemplateParametersFile `
                                        @OptionalParameters `
                                        -Force -Verbose `
-									   2>> .\error.txt | Out-File .\test.txt `
+									   2>> $ErrorFileName | Out-File $LogFileName `
                                        -ErrorVariable ErrorMessages
     if ($ErrorMessages) {
         Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
