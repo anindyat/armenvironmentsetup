@@ -15,13 +15,11 @@
 
 Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    #[string] [Parameter(Mandatory=$true)] $PublishSettingsFileNameWithPath,
-    #[string] [Parameter(Mandatory=$true)] $SubscriptionId, 
+    [string] [Parameter(Mandatory=$true)] $SubscriptionId, 
     [string] $ResourceGroupName = 'IoTEnvSetup',
     [string] $LogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-dd).txt",
     [string] $ErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-dd).txt",
     [string] $OutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-dd).txt",
-    [string] $ContextFilePath = "$pwd\ProfileContext.ctx",
     [switch] $UploadArtifacts,
     [string] $StorageAccountName,
     [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
@@ -32,18 +30,8 @@ Param(
     [switch] $ValidateOnly
 )
 
-
-Add-AzureRmAccount
-
-Get-AzureRmContext
-
-$SubscriptionId = Read-Host -Prompt "Subscription ID"
-
-Set-AzureRmContext -SubscriptionId $SubscriptionId
-
-Save-AzureRmContext -Path $ContextFilePath -Force
-
-Import-AzureRmContext -Path $ContextFilePath
+ 
+Select-AzureRMSubscription -SubscriptionId $SubscriptionId #Set Default 
 
 
 try {
@@ -123,7 +111,7 @@ if ($UploadArtifacts) {
 }
 
 # Create or update the resource group using the specified template file and template parameters file
-#New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force 2>> $ErrorFileName | Out-File $LogFileName
+New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force 2>> $ErrorFileName | Out-File $LogFileName
 
 if ($ValidateOnly) {
     $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
