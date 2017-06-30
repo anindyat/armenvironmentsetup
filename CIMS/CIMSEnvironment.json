@@ -21,7 +21,7 @@
     //},
     "environmentType": {
       "type": "string",
-      "defaultValue": "basic",
+      "defaultValue": "prod",
       "allowedValues": [
         "basic",
         "prod"
@@ -29,7 +29,7 @@
     },
     "environmentName": {
       "type": "string",
-      "defaultValue": "Dev",
+      "defaultValue": "Stag",
       "allowedValues": [
         "Dev",
         "QA",
@@ -56,6 +56,7 @@
     },
     "serviceBusTopicName": {
       "type": "string",
+      "defaultValue": "sbtopicname",
       "metadata": {
         "description": "Comma seperated Topic Names"
       }
@@ -71,7 +72,8 @@
     },
     "hostingPlanName": {
       "type": "string",
-      "minLength": 1
+      "minLength": 1,
+      "defaultValue": "HostPlan"
     },
     "webAppType": {
       "type": "string",
@@ -112,13 +114,15 @@
     //  }
     //},
     "administratorLogin": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "otisadmin"
     },
     "administratorLoginPassword": {
       "type": "securestring"
     },
     "databaseName": {
-      "type": "string"
+      "type": "string",
+      "defaultValue": "cimsdb"
     },
     "collation": {
       "type": "string",
