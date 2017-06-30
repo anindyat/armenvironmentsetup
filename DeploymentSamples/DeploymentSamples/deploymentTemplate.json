@@ -1,0 +1,32 @@
+{
+  "properties": {
+    "template": {
+      "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+      },
+      "variables": {
+      },
+      "resources": [
+        {
+          "name": "ryantestblobotis12345",
+          "apiVersion": "2016-01-01",
+          "type": "Microsoft.Storage/storageAccounts",
+          "sku": {
+            "name": "Standard_RAGRS",
+            "tier": "Standard"
+          },
+          "kind": "BlobStorage",
+          "location": "eastus",
+          "tags": {},
+          "properties": {
+            "accessTier": "Hot"
+          }
+        }
+      ]
+    },
+    "mode": "Incremental",
+    "parameters": {
+    }
+  }
+}

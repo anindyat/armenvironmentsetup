@@ -7,6 +7,8 @@ Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "CIMS", "CIMS\CIMS.deploypro
 EndProject
 Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "CIMS_RollbackScripts", "CIMS_RollbackScripts\CIMS_RollbackScripts.deployproj", "{BD3BA15D-9F96-4215-B18F-4B690E414A40}"
 EndProject
+Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "DeploymentSamples", "DeploymentSamples\DeploymentSamples\DeploymentSamples.deployproj", "{D63F8956-B31B-4807-AF44-B36437EB6C64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{BD3BA15D-9F96-4215-B18F-4B690E414A40}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD3BA15D-9F96-4215-B18F-4B690E414A40}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD3BA15D-9F96-4215-B18F-4B690E414A40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D63F8956-B31B-4807-AF44-B36437EB6C64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D63F8956-B31B-4807-AF44-B36437EB6C64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D63F8956-B31B-4807-AF44-B36437EB6C64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D63F8956-B31B-4807-AF44-B36437EB6C64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
