@@ -1,4 +1,4 @@
-{
+﻿{
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
@@ -34,7 +34,7 @@
       "defaultValue": {
         "Environment Name": "Dev",
         "Otis Region": "US",
-        "Application": "CIMS"
+        "Application": "G3MS"
       }
     },
     "serviceBusTopicName": {
@@ -72,12 +72,11 @@
       "defaultValue": "otisadmin"
     },
     "administratorLoginPassword": {
-      "type": "securestring",
-      "defaultValue": "P@$$w0rd"
+      "type": "securestring"
     },
     "databaseName": {
       "type": "string",
-      "defaultValue": "cimsdb"
+      "defaultValue": "g3msdb"
     },
     "collation": {
       "type": "string",
@@ -317,7 +316,7 @@
     },
     "currentWebAppSettings": "[variables('webAppSettings')[parameters('webAppType')]]",
     "resourceNameSuffix": "[concat(parameters('environmentName'),'-',variables('otisApplicationName'),'-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
-    "otisApplicationName": "CIMS",
+    "otisApplicationName": "G3MS",
     "appServicePlanName": "[concat('ASP-',variables('resourceNameSuffix'))]",
     "webSiteName": "[concat('WA-', variables('resourceNameSuffix'))]",
     "sqlserverName": "[toLower(concat('SQLS-',variables('resourceNameSuffix')))]",
@@ -373,6 +372,9 @@
       "type": "Microsoft.Sql/servers",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('tagValues')]",
+      //"tags": {
+      //  "displayName": "SqlServer",
+      //},
       "apiVersion": "2014-04-01-preview",
       "properties": {
         "administratorLogin": "[parameters('administratorLogin')]",
@@ -417,6 +419,10 @@
       "name": "[variables('appServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
+      //"tags": {
+      //  "displayName": "HostingPlan",
+      //  "tags": "[parameters('tagValues')]"
+      //},
       "sku": {
         "name": "[variables('currentWebAppSettings').webAppName]",
         "capacity": "[variables('currentWebAppSettings').webAppCapacity]"

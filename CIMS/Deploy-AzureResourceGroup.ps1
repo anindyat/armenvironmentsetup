@@ -11,130 +11,75 @@
 # Get-AzurePublishSettingsFile 
 
 
-################################## 
+##################################
 
 Param(
+    [string] [Parameter(Mandatory=$true)] $ResourceGroupName,
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation,
-    [string] [Parameter(Mandatory=$true)] $SubscriptionId, 
-    [string] $ResourceGroupName = 'IoTEnvSetup',
+    [string] [Parameter(Mandatory=$true)] $deploymentName,
+    [string] [Parameter(Mandatory=$true)] $ApplicationDeployment,
     [string] $LogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-dd).txt",
     [string] $ErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-dd).txt",
     [string] $OutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-dd).txt",
-    [switch] $UploadArtifacts,
-    [string] $StorageAccountName,
-    [string] $StorageContainerName = $ResourceGroupName.ToLowerInvariant() + '-stageartifacts',
     [string] $TemplateFile = 'CIMSEnvironment.json',
-    [string] $TemplateParametersFile = 'CIMSEnvironment.parameters.json',
-    [string] $ArtifactStagingDirectory = '.',
-    [string] $DSCSourceFolder = 'DSC',
-    [switch] $ValidateOnly
+    [string] $TemplateParametersFile = 'CIMSEnvironment.parameters.json'
 )
-
  
-Select-AzureRMSubscription -SubscriptionId $SubscriptionId #Set Default 
+Set-ExecutionPolicy Unrestricted
+#$aadClientId = 'f712a560-e91a-4fa9-a366-441989bb230e'
+#$aadClientSecret = '2Z8RCc/nG4YihxXeMgaauiwFAs48MgZU103wgoDgM3M='
+#$aadTenantId = 'a1955e28-2936-4d88-9b2b-549fea819975'
 
+$aadClientId = '77d30e9a-a1d5-42e6-a4b1-d8009b1fbbd7'
+$aadClientSecret = 'AKKbp0VTYj1yDhwURVGLAB/FeYKS6aNA7lMOyWbCQEw='
+$aadTenantId = '3df212f7-caab-434b-bf95-980c5f161c43'
 
-try {
-    [Microsoft.Azure.Common.Authentication.AzureSession]::ClientFactory.AddUserAgent("VSAzureTools-$UI$($host.name)".replace(' ','_'), '3.0.0')
-} catch { }
+# Clear Cached Credentials 
+Get-AzureAccount | ForEach-Object { Remove-AzureAccount $_.ID -Force } 
 
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version 3
+$secpasswd = ConvertTo-SecureString "$aadClientSecret" -AsPlainText -Force
+$subcreds = New-Object System.Management.Automation.PSCredential ("$aadClientId", $secpasswd)
+Login-AzureRmAccount -ServicePrincipal -Tenant $aadTenantId -Credential $subcreds 
 
-function Format-ValidationOutput {
-    param ($ValidationOutput, [int] $Depth = 0)
-    Set-StrictMode -Off
-    return @($ValidationOutput | Where-Object { $_ -ne $null } | ForEach-Object { @('  ' * $Depth + ': ' + $_.Message) + @(Format-ValidationOutput @($_.Details) ($Depth + 1)) })
+#Checking if RG exists
+$resourceGroupNameResult = Get-AzureRmResourceGroup -Name "$ResourceGroupName" -ErrorAction SilentlyContinue
+#$resourceGroupNameResult = Get-AzureRmResource -Name "$ServiceName" -ResourceGroupName "$ResourceGroupName" -ErrorAction SilentlyContinue
+if($resourceGroupNameResult -ne $null)
+{
+    Write-Verbose "ResourceGroup exists $ResourceGroupName"
+}
+else
+{
+    New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -ErrorAction SilentlyContinue
 }
 
-$OptionalParameters = New-Object -TypeName Hashtable
-$TemplateFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $TemplateFile))
-$TemplateParametersFile = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $TemplateParametersFile))
+# Determine which application to deploy
+if($ApplicationDeployment.ToLower() -eq "cims") 
+{
+    New-AzureRmResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName `
+								       -TemplateFile "CIMSEnvironment.json" -TemplateParameterFile "CIMSEnvironment.parameters.json" `
+								       -Force -Verbose 2>> $ErrorFileName | Out-File $LogFileName -ErrorVariable ErrorMessages 
+}
+elseif($ApplicationDeployment.ToLower() -eq "g3ms")
+{
+    New-AzureRmResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName `
+								       -TemplateFile "G3MSEnvironment.json" -TemplateParameterFile "G3MSEnvironment.parameters.json" `
+								       -Force -Verbose 2>> $ErrorFileName | Out-File $LogFileName -ErrorVariable ErrorMessages 
+}
+else
+{
+    New-AzureRmResourceGroupDeployment -Name $deploymentName -ResourceGroupName $ResourceGroupName `
+								       -TemplateFile "CIMSEnvironment.json" -TemplateParameterFile "CIMSEnvironment.parameters.json" `
+								       -Force -Verbose 2>> $ErrorFileName | Out-File $LogFileName -ErrorVariable ErrorMessagess
 
-if ($UploadArtifacts) {
-    # Convert relative paths to absolute paths if needed
-    $ArtifactStagingDirectory = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $ArtifactStagingDirectory))
-    $DSCSourceFolder = [System.IO.Path]::GetFullPath([System.IO.Path]::Combine($PSScriptRoot, $DSCSourceFolder))
-
-    # Parse the parameter file and update the values of artifacts location and artifacts location SAS token if they are present
-    $JsonParameters = Get-Content $TemplateParametersFile -Raw | ConvertFrom-Json
-    if (($JsonParameters | Get-Member -Type NoteProperty 'parameters') -ne $null) {
-        $JsonParameters = $JsonParameters.parameters
-    }
-    $ArtifactsLocationName = '_artifactsLocation'
-    $ArtifactsLocationSasTokenName = '_artifactsLocationSasToken'
-    $OptionalParameters[$ArtifactsLocationName] = $JsonParameters | Select -Expand $ArtifactsLocationName -ErrorAction Ignore | Select -Expand 'value' -ErrorAction Ignore
-    $OptionalParameters[$ArtifactsLocationSasTokenName] = $JsonParameters | Select -Expand $ArtifactsLocationSasTokenName -ErrorAction Ignore | Select -Expand 'value' -ErrorAction Ignore
-
-    # Create DSC configuration archive
-    if (Test-Path $DSCSourceFolder) {
-        $DSCSourceFilePaths = @(Get-ChildItem $DSCSourceFolder -File -Filter '*.ps1' | ForEach-Object -Process {$_.FullName})
-        foreach ($DSCSourceFilePath in $DSCSourceFilePaths) {
-            $DSCArchiveFilePath = $DSCSourceFilePath.Substring(0, $DSCSourceFilePath.Length - 4) + '.zip'
-            Publish-AzureRmVMDscConfiguration $DSCSourceFilePath -OutputArchivePath $DSCArchiveFilePath -Force -Verbose
-        }
-    }
-
-    # Create a storage account name if none was provided
-    if ($StorageAccountName -eq '') {
-        $StorageAccountName = 'stage' + ((Get-AzureRmContext).Subscription.SubscriptionId).Replace('-', '').substring(0, 19)
-    }
-
-    $StorageAccount = (Get-AzureRmStorageAccount | Where-Object{$_.StorageAccountName -eq $StorageAccountName})
-
-    # Create the storage account if it doesn't already exist
-    if ($StorageAccount -eq $null) {
-        $StorageResourceGroupName = 'ARM_Deploy_Staging'
-        New-AzureRmResourceGroup -Location "$ResourceGroupLocation" -Name $StorageResourceGroupName -Force
-        $StorageAccount = New-AzureRmStorageAccount -StorageAccountName $StorageAccountName -Type 'Standard_LRS' -ResourceGroupName $StorageResourceGroupName -Location "$ResourceGroupLocation"
-    }
-
-    # Generate the value for artifacts location if it is not provided in the parameter file
-    if ($OptionalParameters[$ArtifactsLocationName] -eq $null) {
-        $OptionalParameters[$ArtifactsLocationName] = $StorageAccount.Context.BlobEndPoint + $StorageContainerName
-    }
-
-    # Copy files from the local storage staging location to the storage account container
-    New-AzureStorageContainer -Name $StorageContainerName -Context $StorageAccount.Context -ErrorAction SilentlyContinue *>&1
-
-    $ArtifactFilePaths = Get-ChildItem $ArtifactStagingDirectory -Recurse -File | ForEach-Object -Process {$_.FullName}
-    foreach ($SourcePath in $ArtifactFilePaths) {
-        Set-AzureStorageBlobContent -File $SourcePath -Blob $SourcePath.Substring($ArtifactStagingDirectory.length + 1) `
-            -Container $StorageContainerName -Context $StorageAccount.Context -Force
-    }
-
-    # Generate a 4 hour SAS token for the artifacts location if one was not provided in the parameters file
-    if ($OptionalParameters[$ArtifactsLocationSasTokenName] -eq $null) {
-        $OptionalParameters[$ArtifactsLocationSasTokenName] = ConvertTo-SecureString -AsPlainText -Force `
-            (New-AzureStorageContainerSASToken -Container $StorageContainerName -Context $StorageAccount.Context -Permission r -ExpiryTime (Get-Date).AddHours(4))
-    }
+    New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								       -TemplateFile "G3MSEnvironment.json" -TemplateParameterFile "G3MSEnvironment.parameters.json" `
+								       -Force -Verbose 2>> $ErrorFileName | Out-File $LogFileName -ErrorVariable ErrorMessages
 }
 
-# Create or update the resource group using the specified template file and template parameters file
-New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -Verbose -Force 2>> $ErrorFileName | Out-File $LogFileName
+#Import-Module "C:\Program Files (x86)\Microsoft SDKs\Azure\PowerShell\ServiceManagement\Azure\Azure.psd1"
 
-if ($ValidateOnly) {
-    $ErrorMessages = Format-ValidationOutput (Test-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName `
-                                                                                  -TemplateFile $TemplateFile `
-                                                                                  -TemplateParameterFile $TemplateParametersFile `
-                                                                                  @OptionalParameters)
-    if ($ErrorMessages) {
-        Write-Output '', 'Validation returned the following errors:', @($ErrorMessages), '', 'Template is invalid.'
-    }
-    else {
-        Write-Output '', 'Template is valid.'
-    }
-}
-else {
-    New-AzureRmResourceGroupDeployment -Name ((Get-ChildItem $TemplateFile).BaseName + '-' + ((Get-Date).ToUniversalTime()).ToString('MMdd-HHmm')) `
-                                       -ResourceGroupName $ResourceGroupName `
-                                       -TemplateFile $TemplateFile `
-                                       -TemplateParameterFile $TemplateParametersFile `
-                                       @OptionalParameters `
-                                       -Force -Verbose `
-									   2>> $ErrorFileName | Out-File $LogFileName `
-                                       -ErrorVariable ErrorMessages
-    if ($ErrorMessages) {
-        Write-Output '', 'Template deployment returned the following errors:', @(@($ErrorMessages) | ForEach-Object { $_.Exception.Message.TrimEnd("`r`n") })
-    }
-}
+#New-AzureRmResourceGroupDeployment -Name $ResourceGroupName -TemplateFile deploymentTemplate.json -ResourceGroupName $ResourceGroupName 
+#New-AzureRmResourceGroupDeployment -Name "ggjgfsdgfsjag" -ResourceGroupName $ResourceGroupName `
+#								   -TemplateFile "CIMSEnvironment.json" -TemplateParameterFile "CIMSEnvironment.parameters.json" `
+#								   -Force -Verbose 2>> $ErrorFileName | Out-File $LogFileName -ErrorVariable ErrorMessages
