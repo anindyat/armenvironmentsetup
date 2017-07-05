@@ -259,3 +259,9 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+/CIMS/CIMS_log-2017-06-22.txt
+/CIMS/CIMS_error-2017-06-23.txt
+/CIMS/CIMS_error-2017-06-22.txt
+/CIMS/CIMS_log-2017-06-22.txt
+/CIMS/CIMS_error-2017-06-23.txt
+/CIMS/CIMS_error-2017-06-22.txt

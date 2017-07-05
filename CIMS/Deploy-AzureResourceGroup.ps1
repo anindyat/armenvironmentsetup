@@ -2,16 +2,6 @@
 #Requires -Version 3.0
 #Requires -Module AzureRM.Resources
 #Requires -Module Azure.Storage
-################################## 
- 
-# Authenticate w/ Certificate   
-
-#Get the publishSettingFile from the portal
-
-# Get-AzurePublishSettingsFile 
-
-
-##################################
 
 Param(
     [string] [Parameter(Mandatory=$true)] $ApplicationId, #The ID of the application
@@ -21,9 +11,9 @@ Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation, #The location where the Resource Group will be created
     [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationDeployment = "CIMS",
     [string] $CIMSTemplateFile = 'CIMSEnvironment.json',
-    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.prod.eastus.parameters.json',
-    [string] $G3MSTemplateFile = 'CIMSEnvironment.json',
-    [string] $G3MSTemplateParametersFile = 'CIMSEnvironment.prod.eastus.parameters.json'
+    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.prod.emea.parameters.json',
+    [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
+    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json'
 )
 
 #CIMS-related output files
@@ -59,29 +49,29 @@ else
 
 # Determine which application to deploy
 switch ($ApplicationDeployment.ToLower())
-    { 
-        #Deploys the CIMS template
-        "cims" {
-            New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								       -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
-								       -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
-        } 
+{ 
+    #Deploys the CIMS template
+    "CIMS" {
+        New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								    -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
+								    -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
+    } 
 
-        #Deploys the G3MS template
-        "g3ms" {
-            New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								       -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-								       -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
-        } 
+    #Deploys the G3MS template
+    "G3MS" {
+        New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								    -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
+								    -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
+    } 
 
-        #Deploys both the CIMS & G3MS templates
-        "both" {
-            New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								       -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
-								       -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessagess
+    #Deploys both the CIMS & G3MS templates
+    "BOTH" {
+        New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								    -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
+								    -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessagess
 
-            New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								       -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-								       -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages
-        }
+        New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								    -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
+								    -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages
     }
+}

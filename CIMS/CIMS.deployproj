@@ -30,9 +30,9 @@
     </None>
     <Content Include="Deploy-AzureResourceGroup.ps1" />
     <Content Include="CIMSEnvironment.json" />
-    <Content Include="CIMSEnvironment.prod.eastus.parameters.json" />
+    <Content Include="CIMSEnvironment.prod.emea.parameters.json" />
     <None Include="G3MSEnvironment.json" />
-    <None Include="G3MSEnvironment.prod.eastus.parameters.json" />
+    <None Include="G3MSEnvironment.prod.emea.parameters.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="OutputFiles\" />
