@@ -318,7 +318,7 @@
     "serviceBusNamespaceName": "[concat('SB-',parameters('environmentName'),'-OtisCloud-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "TopicNames": "Topic-G3MS",
     "iotApiVersion": "2016-02-03",
-    "iotHubName": "[concat('IH-',variables('resourceNameSuffix'))]"
+    "iotHubName": "[concat('IH-',parameters('environmentName'),'-OtisCloud-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]"
   },
   "resources": [
     {
