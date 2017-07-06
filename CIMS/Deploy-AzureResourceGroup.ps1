@@ -16,17 +16,19 @@ Param(
     [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json'
 )
 
+#No restrictions; all Windows PowerShell scripts can be run
+Set-ExecutionPolicy Unrestricted
+
 #CIMS-related output files
-$CIMSLogFileName = ".\OutputFiles\CIMS_log-$(get-date -f yyyy-MM-dd).txt"
-$CIMSErrorFileName = ".\OutputFiles\CIMS_error-$(get-date -f yyyy-MM-dd).txt"
-$CIMSOutputFileName = ".\OutputFiles\CIMS_output-$(get-date -f yyyy-MM-dd).txt"
+$CIMSLogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-dd).txt"
+$CIMSErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-dd).txt"
+$CIMSOutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-dd).txt"
 
 #G3MS-related output files
-$G3MSLogFileName = ".\OutputFiles\G3MS_log-$(get-date -f yyyy-MM-dd).txt"
-$G3MSErrorFileName = ".\OutputFiles\G3MS_error-$(get-date -f yyyy-MM-dd).txt"
-$G3MSOutputFileName = ".\OutputFiles\G3MS_output-$(get-date -f yyyy-MM-dd).txt"
- 
-Set-ExecutionPolicy Unrestricted
+$G3MSLogFileName = ".\G3MS_log-$(get-date -f yyyy-MM-dd).txt"
+$G3MSErrorFileName = ".\G3MS_error-$(get-date -f yyyy-MM-dd).txt"
+$G3MSOutputFileName = ".\G3MS_output-$(get-date -f yyyy-MM-dd).txt"
+
 
 #Clear Cached Credentials 
 Get-AzureAccount | ForEach-Object { Remove-AzureAccount $_.ID -Force } 
@@ -48,7 +50,7 @@ else
 }
 
 # Determine which application to deploy
-switch ($ApplicationDeployment.ToLower())
+switch ($ApplicationDeployment.ToUpper())
 { 
     #Deploys the CIMS template
     "CIMS" {

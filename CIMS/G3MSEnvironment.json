@@ -37,13 +37,6 @@
         "Application": "G3MS"
       }
     },
-    "serviceBusTopicName": {
-      "type": "string",
-      "defaultValue": "sbtopicname",
-      "metadata": {
-        "description": "Comma seperated Topic Names"
-      }
-    },
     "redisCacheType": {
       "type": "string",
       "defaultValue": "basic",
@@ -322,8 +315,8 @@
     "webSiteName": "[concat('WA-', variables('resourceNameSuffix'))]",
     "sqlserverName": "[toLower(concat('SQLS-',variables('resourceNameSuffix')))]",
     "redisCacheName": "[concat('RC-',variables('resourceNameSuffix'))]",
-    "serviceBusNamespaceName": "[concat('SB-',variables('resourceNameSuffix'))]",
-    "TopicNames": "[split(parameters('serviceBusTopicName'), ',')]",
+    "serviceBusNamespaceName": "[concat('SB-',parameters('environmentName'),'-OtisCloud-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
+    "TopicNames": "Topic-G3MS",
     "iotApiVersion": "2016-02-03",
     "iotHubName": "[concat('IH-',variables('resourceNameSuffix'))]"
   },
@@ -354,18 +347,14 @@
     },
     {
       "apiVersion": "2015-08-01",
-      "name": "[concat(variables('serviceBusNamespaceName'), '/', variables('TopicNames')[copyIndex()])]",
+      "name": "[concat(variables('serviceBusNamespaceName'), '/', variables('TopicNames'))]",
       "type": "Microsoft.ServiceBus/namespaces/topics",
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.ServiceBus/namespaces/', variables('serviceBusNamespaceName'))]"
       ],
-      "copy": {
-        "name": "TopicNameCopy",
-        "count": "[length(variables('TopicNames'))]"
-      },
       "properties": {
-        "path": "[variables('TopicNames')[copyIndex()]]"
+        "path": "[variables('TopicNames')]"
       }
     },
     {
@@ -373,9 +362,6 @@
       "type": "Microsoft.Sql/servers",
       "location": "[resourceGroup().location]",
       "tags": "[parameters('tagValues')]",
-      //"tags": {
-      //  "displayName": "SqlServer",
-      //},
       "apiVersion": "2014-04-01-preview",
       "properties": {
         "administratorLogin": "[parameters('administratorLogin')]",
@@ -420,10 +406,6 @@
       "name": "[variables('appServicePlanName')]",
       "type": "Microsoft.Web/serverfarms",
       "location": "[resourceGroup().location]",
-      //"tags": {
-      //  "displayName": "HostingPlan",
-      //  "tags": "[parameters('tagValues')]"
-      //},
       "sku": {
         "name": "[variables('currentWebAppSettings').webAppName]",
         "capacity": "[variables('currentWebAppSettings').webAppCapacity]"
