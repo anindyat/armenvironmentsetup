@@ -72,7 +72,8 @@
       "defaultValue": "otisadmin"
     },
     "administratorLoginPassword": {
-      "type": "securestring"
+      "type": "securestring",
+      "defaultValue": "P@$$w0rd"
     },
     "databaseName": {
       "type": "string",

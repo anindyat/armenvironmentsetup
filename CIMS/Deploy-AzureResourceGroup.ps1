@@ -9,7 +9,7 @@ Param(
     [string] [Parameter(Mandatory=$true)] $AadDirectoryId, #The Azure Active Directory ID
     [string] [Parameter(Mandatory=$true)] $ResourceGroupName, #The place where resources will be listed
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation, #The location where the Resource Group will be created
-    [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationDeployment = "CIMS",
+    [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationDeployment = "BOTH",
     [string] $CIMSTemplateFile = 'CIMSEnvironment.json',
     [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.prod.emea.parameters.json',
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
