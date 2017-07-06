@@ -8,9 +8,6 @@
     "administratorLogin": {
       "value": "otisadmin"
     },
-    "databaseName": {
-      "value": "cimsdb"
-    },
     "environmentType": {
       "value": "prod"
     },

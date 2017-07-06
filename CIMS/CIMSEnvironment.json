@@ -37,28 +37,10 @@
         "Application": "CIMS"
       }
     },
-    "redisCacheType": {
-      "type": "string",
-      "defaultValue": "basic",
-      "allowedValues": [
-        "basic",
-        "standard",
-        "prod"
-      ]
-    },
     "hostingPlanName": {
       "type": "string",
       "minLength": 1,
       "defaultValue": "HostPlan"
-    },
-    "webAppType": {
-      "type": "string",
-      "defaultValue": "basic",
-      "allowedValues": [
-        "basic",
-        "standard",
-        "prod"
-      ]
     },
     "administratorLogin": {
       "type": "string",
@@ -67,10 +49,6 @@
     "administratorLoginPassword": {
       "type": "securestring",
       "defaultValue": "P@$$w0rd"
-    },
-    "databaseName": {
-      "type": "string",
-      "defaultValue": "cimsdb"
     },
     "collation": {
       "type": "string",
@@ -104,44 +82,6 @@
       "metadata": {
         "description": "Describes the performance level for Edition"
       }
-    },
-    "iotSkuName": {
-
-      "type": "string",
-
-      "allowedValues": [
-
-        "F1",
-
-        "S1",
-
-        "S2"
-
-      ],
-
-      "defaultValue": "F1",
-
-      "metadata": {
-
-        "description": "One of the supported SKUs: F1, S1 or S2"
-
-      }
-
-    },
-    "capacityUnits": {
-
-      "type": "int",
-
-      "minValue": 1,
-
-      "defaultValue": 1,
-
-      "metadata": {
-
-        "description": "Number of desired IoT Hub units. Restricted to 1 unit for F1. Can be set up to maximum number allowed for subscription."
-
-      }
-
     },
     "d2cMessageRetentionInDaysPeriod": {
 
@@ -265,7 +205,20 @@
     }
   },
   "variables": {
-    "environmentSettings": {
+    "iotHubEnvironmentSettings": {
+      "basic": {
+        "iotName": "S1",
+        "iotTier": "Standard",
+        "iotCapacity": 1
+      },
+      "prod": {
+        "iotName": "S1",
+        "iotTier": "Standard",
+        "iotCapacity": 1
+      }
+    },
+    "currentIOTHubEnvironmentSettings": "[variables('iotHubEnvironmentSettings')[parameters('environmentType')]]",
+    "sqlEnvironmentSettings": {
       "basic": {
         "sqlEdition": "Basic",
         "sqlRequestedServiceObjectiveName": "Basic"
@@ -275,42 +228,45 @@
         "sqlRequestedServiceObjectiveName": "S2"
       }
     },
-    "currentEnvironmentSettings": "[variables('environmentSettings')[parameters('environmentType')]]",
+    "currentSQLEnvironmentSettings": "[variables('sqlEnvironmentSettings')[parameters('environmentType')]]",
+    "serviceBusEnvironmentSettings": {
+      "basic": {
+        "serviceBusName": "Basic",
+        "serviceBusTier": "Basic"
+      },
+      "prod": {
+        "serviceBusName": "Standard",
+        "serviceBusTier": "Standard"
+      }
+    },
+    "currentServiceBusEnvironmentSettings": "[variables('serviceBusEnvironmentSettings')[parameters('environmentType')]]",
     "redisCacheSettings": {
       "basic": {
         "redisCapacity": 1,
         "redisFamily": "C",
         "redisName": "Basic"
       },
-      "standard": {
+      "prod": {
         "redisCapacity": 1,
         "redisFamily": "C",
         "redisName": "Standard"
-      },
-      "prod": {
-        "redisCapacity": 1,
-        "redisFamily": "P",
-        "redisName": "Premium"
       }
     },
-    "currentRedisCacheSettings": "[variables('redisCacheSettings')[parameters('redisCacheType')]]",
+    "currentRedisCacheSettings": "[variables('redisCacheSettings')[parameters('environmentType')]]",
     "webAppSettings": {
       "basic": {
         "webAppCapacity": 1,
         "webAppName": "B1"
       },
-      "standard": {
-        "webAppCapacity": 1,
-        "webAppName": "S1"
-      },
       "prod": {
         "webAppCapacity": 1,
-        "webAppName": "P1"
+        "webAppName": "S1"
       }
     },
-    "currentWebAppSettings": "[variables('webAppSettings')[parameters('webAppType')]]",
+    "currentWebAppSettings": "[variables('webAppSettings')[parameters('environmentType')]]",
     "resourceNameSuffix": "[concat(parameters('environmentName'),'-',variables('otisApplicationName'),'-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "otisApplicationName": "CIMS",
+    "databaseName": "cimsdb",
     "appServicePlanName": "[concat('ASP-',variables('resourceNameSuffix'))]",
     "webSiteName": "[concat('WA-', variables('resourceNameSuffix'))]",
     "sqlserverName": "[toLower(concat('SQLS-',variables('resourceNameSuffix')))]",
@@ -340,6 +296,10 @@
       "apiVersion": "2015-08-01",
       "name": "[variables('serviceBusNamespaceName')]",
       "type": "Microsoft.ServiceBus/namespaces",
+      "sku": {
+        "name": "[variables('currentServiceBusEnvironmentSettings').serviceBusName]",
+        "tier": "[variables('currentServiceBusEnvironmentSettings').serviceBusTier]"
+      },
       "location": "[resourceGroup().location]",
       "tags": "[parameters('tagValues')]",
       "properties": {
@@ -369,7 +329,7 @@
       },
       "resources": [
         {
-          "name": "[parameters('databaseName')]",
+          "name": "[variables('databaseName')]",
           "type": "databases",
           "location": "[resourceGroup().location]",
           "tags": {
@@ -380,10 +340,10 @@
             "[resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))]"
           ],
           "properties": {
-            "edition": "[variables('currentEnvironmentSettings').sqlEdition]",
+            "edition": "[variables('currentSQLEnvironmentSettings').sqlEdition]",
             "collation": "[parameters('collation')]",
             "maxSizeBytes": "[parameters('maxSizeBytes')]",
-            "requestedServiceObjectiveName": "[variables('currentEnvironmentSettings').sqlrequestedServiceObjectiveName]"
+            "requestedServiceObjectiveName": "[variables('currentSQLEnvironmentSettings').sqlrequestedServiceObjectiveName]"
           }
         },
         {
@@ -440,7 +400,7 @@
           ],
           "properties": {
             "DefaultConnection": {
-              "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
+              "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
               "type": "SQLServer"
             }
           }
@@ -688,10 +648,11 @@
         "location": "[resourceGroup().location]"
       },
       "sku": {
-        "name": "[parameters('iotSkuName')]",
-        "capacity": "[parameters('capacityUnits')]"
+        "name": "[variables('currentIOTHubEnvironmentSettings').iotName]",
+        "capacity": "[variables('currentIOTHubEnvironmentSettings').iotCapacity]",
+        "tier": "[variables('currentIOTHubEnvironmentSettings').iotTier]"
       },
-      "type": "Microsoft.Devices/iotHubs"
+      "type": "Microsoft.Devices/IotHubs"
     },
     {
 
@@ -709,7 +670,7 @@
       "type": "object"
     },
     "webAppConnectionString=": {
-      "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', parameters('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
+      "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
       "type": "string"
     },
     "redisCache=": {
@@ -726,7 +687,7 @@
     },
     "DatabaseConnectionString=": {
       "type": "string",
-      "value": "[concat('Server=tcp:',reference(variables('sqlserverName')).fullyQualifiedDomainName,',1433;Initial Catalog=',parameters('databaseName'),';Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+      "value": "[concat('Server=tcp:',reference(variables('sqlserverName')).fullyQualifiedDomainName,',1433;Initial Catalog=',variables('databaseName'),';Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
     },
     "iotHub=": {
       "value": "[reference(resourceId('Microsoft.Devices/IoTHubs',variables('iotHubName')))]",
