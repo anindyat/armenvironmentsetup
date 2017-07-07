@@ -4,7 +4,7 @@
   "parameters": {
     "environmentType": {
       "type": "string",
-      "defaultValue": "prod",
+      "defaultValue": "basic",
       "allowedValues": [
         "basic",
         "prod"
@@ -12,7 +12,7 @@
     },
     "environmentName": {
       "type": "string",
-      "defaultValue": "Stag",
+      "defaultValue": "QA",
       "allowedValues": [
         "Dev",
         "QA",
@@ -25,6 +25,7 @@
       "defaultValue": "US",
       "allowedValues": [
         "US",
+        "EMEA",
         "EU",
         "CA"
       ]
@@ -37,16 +38,11 @@
         "Application": "CIMS"
       }
     },
-    "hostingPlanName": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "HostPlan"
-    },
-    "administratorLogin": {
+    "sqlAdministratorLogin": {
       "type": "string",
       "defaultValue": "otisadmin"
     },
-    "administratorLoginPassword": {
+    "sqlAdministratorLoginPassword": {
       "type": "securestring",
       "defaultValue": "P@$$w0rd"
     },
@@ -324,8 +320,8 @@
       "tags": "[parameters('tagValues')]",
       "apiVersion": "2014-04-01-preview",
       "properties": {
-        "administratorLogin": "[parameters('administratorLogin')]",
-        "administratorLoginPassword": "[parameters('administratorLoginPassword')]"
+        "administratorLogin": "[parameters('sqlAdministratorLogin')]",
+        "administratorLoginPassword": "[parameters('sqlAdministratorLoginPassword')]"
       },
       "resources": [
         {
@@ -400,7 +396,7 @@
           ],
           "properties": {
             "DefaultConnection": {
-              "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
+              "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('sqlAdministratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlAdministratorLoginPassword'), ';')]",
               "type": "SQLServer"
             }
           }
@@ -670,7 +666,7 @@
       "type": "object"
     },
     "webAppConnectionString=": {
-      "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('administratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('administratorLoginPassword'), ';')]",
+      "value": "[concat('Data Source=tcp:', reference(resourceId('Microsoft.Sql/servers/', variables('sqlserverName'))).fullyQualifiedDomainName, ',1433;Initial Catalog=', variables('databaseName'), ';User Id=', parameters('sqlAdministratorLogin'), '@', variables('sqlserverName'), ';Password=', parameters('sqlAdministratorLoginPassword'), ';')]",
       "type": "string"
     },
     "redisCache=": {
