@@ -13,7 +13,8 @@ Param(
     [string] $CIMSTemplateFile = 'CIMSEnvironment.json',
     [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.prod.emea.parameters.json',
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
-    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json'
+    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json',
+	[boolean] $IsPublishCode = ($false) 
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
@@ -28,7 +29,6 @@ $CIMSOutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-dd).txt"
 $G3MSLogFileName = ".\G3MS_log-$(get-date -f yyyy-MM-dd).txt"
 $G3MSErrorFileName = ".\G3MS_error-$(get-date -f yyyy-MM-dd).txt"
 $G3MSOutputFileName = ".\G3MS_output-$(get-date -f yyyy-MM-dd).txt"
-
 
 #Clear Cached Credentials 
 Get-AzureAccount | ForEach-Object { Remove-AzureAccount $_.ID -Force } 
@@ -49,31 +49,21 @@ else
     New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -ErrorAction SilentlyContinue
 }
 
+$ApplicationDeployment = $ApplicationDeployment.ToUpper()
+
 # Determine which application to deploy
-switch ($ApplicationDeployment.ToUpper())
-{ 
-    #Deploys the CIMS template
-    "CIMS" {
-        New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								    -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
-								    -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
-    } 
-
-    #Deploys the G3MS template
-    "G3MS" {
-        New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								    -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-								    -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
-    } 
-
-    #Deploys both the CIMS & G3MS templates
-    "BOTH" {
-        New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								    -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
-								    -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessagess
-
-        New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								    -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-								    -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages
-    }
+if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
+#Deploys the CIMS template
+{
+    New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
+								-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
 }
+
+#Deploys the G3MS template
+if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
+{
+    New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+								-TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
+								-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
+} 

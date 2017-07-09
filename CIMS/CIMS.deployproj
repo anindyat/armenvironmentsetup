@@ -33,9 +33,7 @@
     <Content Include="CIMSEnvironment.prod.emea.parameters.json" />
     <None Include="G3MSEnvironment.json" />
     <None Include="G3MSEnvironment.prod.emea.parameters.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="OutputFiles\" />
+    <None Include="Deploy-AzureWebApp.ps1" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
