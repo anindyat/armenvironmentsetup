@@ -24,14 +24,14 @@ Set-ExecutionPolicy Unrestricted
 $ScriptRoot = (Split-Path -parent $MyInvocation.MyCommand.Definition)
 
 #CIMS-related output files
-$CIMSLogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-dd).txt"
-$CIMSErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-dd).txt"
-$CIMSOutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-dd).txt"
+$CIMSLogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
+$CIMSErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
+$CIMSOutputFileName = ".\CIMS_output-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
 
 #G3MS-related output files
-$G3MSLogFileName = ".\G3MS_log-$(get-date -f yyyy-MM-dd).txt"
-$G3MSErrorFileName = ".\G3MS_error-$(get-date -f yyyy-MM-dd).txt"
-$G3MSOutputFileName = ".\G3MS_output-$(get-date -f yyyy-MM-dd).txt"
+$G3MSLogFileName = ".\G3MS_log-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
+$G3MSErrorFileName = ".\G3MS_error-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
+$G3MSOutputFileName = ".\G3MS_output-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
 
 #Clear Cached Credentials 
 Get-AzureAccount | ForEach-Object { Remove-AzureAccount $_.ID -Force } 
@@ -53,7 +53,7 @@ if($resourceGroupNameResult -ne $null)
 	if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
 	#Deploys the CIMS template
 	{
-		New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+		New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
 									-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
 									-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
 		if ($IsPublishCode="$true"){
@@ -71,7 +71,7 @@ if($resourceGroupNameResult -ne $null)
 	#Deploys the G3MS template
 	if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
 	{
-		New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+		New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
 									-TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
 									-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
 	} 

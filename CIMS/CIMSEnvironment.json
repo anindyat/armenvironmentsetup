@@ -264,7 +264,7 @@
     "otisApplicationName": "CIMS",
     "databaseName": "cimsdb",
     "appServicePlanName": "[concat('ASP-',variables('resourceNameSuffix'))]",
-    "webSiteName": "[concat('WA-', variables('resourceNameSuffix'))]",
+    "webUiName": "[concat('WA-', parameters('environmentName'),'-CIMSUI-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "sqlserverName": "[toLower(concat('SQLS-',variables('resourceNameSuffix')))]",
     "redisCacheName": "[concat('RC-',variables('resourceNameSuffix'))]",
     "serviceBusNamespaceName": "[concat('SB-',parameters('environmentName'),'-OtisCloud-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
@@ -372,7 +372,7 @@
     },
     {
       "apiVersion": "2015-08-01",
-      "name": "[variables('webSiteName')]",
+      "name": "[variables('webUiName')]",
       "type": "Microsoft.Web/sites",
       "location": "[resourceGroup().location]",
       "dependsOn": [
@@ -380,10 +380,10 @@
       ],
       "tags": {
         "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('appServicePlanName'))]": "empty",
-        "displayName": "Website"
+        "displayName": "WebsiteUI"
       },
       "properties": {
-        "name": "[variables('webSiteName')]",
+        "name": "[variables('webUiName')]",
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('appServicePlanName'))]"
       },
       "resources": [
@@ -392,7 +392,7 @@
           "type": "config",
           "name": "connectionstrings",
           "dependsOn": [
-            "[resourceId('Microsoft.Web/Sites/', variables('webSiteName'))]"
+            "[resourceId('Microsoft.Web/Sites/', variables('webUiName'))]"
           ],
           "properties": {
             "DefaultConnection": {
@@ -471,25 +471,25 @@
     },
     {
       "apiVersion": "2014-04-01",
-      "name": "[concat('ServerErrors ', variables('webSiteName'))]",
+      "name": "[concat('ServerErrors ', variables('webUiName'))]",
       "type": "Microsoft.Insights/alertrules",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites/', variables('webSiteName'))]"
+        "[resourceId('Microsoft.Web/sites/', variables('webUiName'))]"
       ],
       "tags": {
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webSiteName'))]": "Resource",
-        "displayName": "ServerErrorsAlertRule"
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webUiName'))]": "Resource",
+        "displayName": "ServerErrorsAlertRuleUI"
       },
       "properties": {
-        "name": "[concat('ServerErrors ', variables('webSiteName'))]",
-        "description": "[concat(variables('webSiteName'), ' has some server errors, status code 5xx.')]",
+        "name": "[concat('ServerErrors ', variables('webUiName'))]",
+        "description": "[concat(variables('webUiName'), ' has some server errors, status code 5xx.')]",
         "isEnabled": false,
         "condition": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
           "dataSource": {
             "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
-            "resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webSiteName'))]",
+            "resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webUiName'))]",
             "metricName": "Http5xx"
           },
           "operator": "GreaterThan",
@@ -505,25 +505,25 @@
     },
     {
       "apiVersion": "2014-04-01",
-      "name": "[concat('ForbiddenRequests ', variables('webSiteName'))]",
+      "name": "[concat('ForbiddenRequests ', variables('webUiName'))]",
       "type": "Microsoft.Insights/alertrules",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites/', variables('webSiteName'))]"
+        "[resourceId('Microsoft.Web/sites/', variables('webUiName'))]"
       ],
       "tags": {
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webSiteName'))]": "Resource",
-        "displayName": "ForbiddenRequestsAlertRule"
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webUiName'))]": "Resource",
+        "displayName": "ForbiddenRequestsAlertRuleUI"
       },
       "properties": {
-        "name": "[concat('ForbiddenRequests ', variables('webSiteName'))]",
-        "description": "[concat(variables('webSiteName'), ' has some requests that are forbidden, status code 403.')]",
+        "name": "[concat('ForbiddenRequests ', variables('webUiName'))]",
+        "description": "[concat(variables('webUiName'), ' has some requests that are forbidden, status code 403.')]",
         "isEnabled": false,
         "condition": {
           "odata.type": "Microsoft.Azure.Management.Insights.Models.ThresholdRuleCondition",
           "dataSource": {
             "odata.type": "Microsoft.Azure.Management.Insights.Models.RuleMetricDataSource",
-            "resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webSiteName'))]",
+            "resourceUri": "[concat(resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webUiName'))]",
             "metricName": "Http403"
           },
           "operator": "GreaterThan",
@@ -607,18 +607,18 @@
     },
     {
       "apiVersion": "2014-04-01",
-      "name": "[variables('webSiteName')]",
+      "name": "[variables('webUiName')]",
       "type": "Microsoft.Insights/components",
       "location": "East US",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/sites/', variables('webSiteName'))]"
+        "[resourceId('Microsoft.Web/sites/', variables('webUiName'))]"
       ],
       "tags": {
-        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webSiteName'))]": "Resource",
-        "displayName": "AppInsightsComponent"
+        "[concat('hidden-link:', resourceGroup().id, '/providers/Microsoft.Web/sites/', variables('webUiName'))]": "Resource",
+        "displayName": "AppInsightsComponentUI"
       },
       "properties": {
-        "ApplicationId": "[variables('webSiteName')]"
+        "ApplicationId": "[variables('webUiName')]"
       }
     },
     {
@@ -662,7 +662,7 @@
   ],
   "outputs": {
     "webApp": {
-      "value": "[reference(resourceId('Microsoft.Web/sites',variables('webSiteName')))]",
+      "value": "[reference(resourceId('Microsoft.Web/sites',variables('webUiName')))]",
       "type": "object"
     },
     "webAppConnectionString=": {
