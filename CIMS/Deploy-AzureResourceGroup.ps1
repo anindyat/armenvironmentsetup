@@ -14,11 +14,14 @@ Param(
     [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.prod.emea.parameters.json',
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
     [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json',
-	[boolean] $IsPublishCode = ($false) 
+	[boolean] $IsPublishCode = ($false),
+	[string] $WebAppDirectory
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
 Set-ExecutionPolicy Unrestricted
+
+$ScriptRoot = (Split-Path -parent $MyInvocation.MyCommand.Definition)
 
 #CIMS-related output files
 $CIMSLogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-dd).txt"
@@ -58,6 +61,16 @@ if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
     New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
 								-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
 								-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
+	if ($IsPublishCode="$true"){
+
+	$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "WA-"
+	$WebAppName = $Result.Name
+
+& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+	-AppDirectory "$WebAppDirectory" `
+	-WebAppName "$WebAppName" `
+	-ResourceGroupName "$ResourceGroupName"
+	}
 }
 
 #Deploys the G3MS template
