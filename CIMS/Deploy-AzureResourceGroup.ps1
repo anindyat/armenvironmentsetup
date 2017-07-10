@@ -15,7 +15,7 @@ Param(
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
     [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json',
 	[boolean] $IsPublishCode = ($false),
-	[string] $WebAppDirectory
+	[string] $WebAppDirectory = ''
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
@@ -45,38 +45,38 @@ Login-AzureRmAccount -ServicePrincipal -Tenant $AadDirectoryId -Credential $subc
 $resourceGroupNameResult = Get-AzureRmResourceGroup -Name "$ResourceGroupName" -ErrorAction SilentlyContinue
 if($resourceGroupNameResult -ne $null)
 {
-    Write-Verbose "ResourceGroup exists $ResourceGroupName"
+    "ResourceGroup exists $ResourceGroupName"
+
+	$ApplicationDeployment = $ApplicationDeployment.ToUpper()
+
+	# Determine which application to deploy
+	if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
+	#Deploys the CIMS template
+	{
+		New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+									-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
+									-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
+		if ($IsPublishCode="$true"){
+
+		$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "WA-"
+		$WebAppName = $Result.Name
+
+	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+		-AppDirectory $WebAppDirectory `
+		-WebAppName $WebAppName `
+		-ResourceGroupName $ResourceGroupName
+		}
+	}
+
+	#Deploys the G3MS template
+	if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
+	{
+		New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
+									-TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
+									-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
+	} 
 }
 else
 {
-    New-AzureRmResourceGroup -Name $ResourceGroupName -Location $ResourceGroupLocation -ErrorAction SilentlyContinue
+    "Resource Group " + $ResourceGroupName + " Not Found"
 }
-
-$ApplicationDeployment = $ApplicationDeployment.ToUpper()
-
-# Determine which application to deploy
-if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
-#Deploys the CIMS template
-{
-    New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
-								-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
-	if ($IsPublishCode="$true"){
-
-	$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "WA-"
-	$WebAppName = $Result.Name
-
-& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
-	-AppDirectory "$WebAppDirectory" `
-	-WebAppName "$WebAppName" `
-	-ResourceGroupName "$ResourceGroupName"
-	}
-}
-
-#Deploys the G3MS template
-if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
-{
-    New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-dd)" -ResourceGroupName $ResourceGroupName `
-								-TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-								-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
-} 
