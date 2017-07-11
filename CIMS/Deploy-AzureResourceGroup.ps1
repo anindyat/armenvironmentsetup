@@ -15,7 +15,9 @@ Param(
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
     [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json',
 	[boolean] $IsPublishCode = ($false),
-	[string] $WebAppDirectory = ''
+	[string] $CIMSWebAppDirectory = "",
+	[string] $G3MSWebAppDirectory = "",
+	[string] $G3MSWebUIDirectory= ""
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
@@ -56,14 +58,14 @@ if($resourceGroupNameResult -ne $null)
 		New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
 									-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
 									-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
-		if ($IsPublishCode="$true"){
+		if ($IsPublishCode){
 
-		$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "WA-"
-		$WebAppName = $Result.Name
+		$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS-API"
+		$CIMSWebAppName = $Result.Name
 
 	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
-		-AppDirectory $WebAppDirectory `
-		-WebAppName $WebAppName `
+		-AppDirectory $CIMSWebAppDirectory `
+		-WebAppName $CIMSWebAppName `
 		-ResourceGroupName $ResourceGroupName
 		}
 	}
@@ -73,7 +75,27 @@ if($resourceGroupNameResult -ne $null)
 	{
 		New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
 									-TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-									-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages 
+									-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages
+	if ($IsPublishCode){
+
+		$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS-API"
+		$G3MSWebAppName = $Result.Name
+
+		$Result1  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS-UI"
+		$G3MSWebUIName = $Result.Name
+
+	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+		-AppDirectory $G3MSWebAppDirectory `
+		-WebAppName $G3MSWebAppName `
+		-ResourceGroupName $ResourceGroupName
+
+	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+		-AppDirectory $G3MSWebUIDirectory `
+		-WebAppName $G3MSWebUIName `
+		-ResourceGroupName $ResourceGroupName
+
+		}
+	
 	} 
 }
 else
