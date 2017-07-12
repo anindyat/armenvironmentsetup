@@ -30,14 +30,6 @@
         "CA"
       ]
     },
-    "tagValues": {
-      "type": "object",
-      "defaultValue": {
-        "Environment Name": "Dev",
-        "Otis Region": "US",
-        "Application": "G3MS"
-      }
-    },
     "sqlAdministratorLogin": {
       "type": "string",
       "defaultValue": "otisadmin"
@@ -45,6 +37,14 @@
     "sqlAdministratorLoginPassword": {
       "type": "securestring",
       "defaultValue": "P@$$w0rd"
+    },
+    "tagValues": {
+      "type": "object",
+      "defaultValue": {
+        "Environment Name": "Dev",
+        "Otis Region": "US",
+        "Application": "G3MS"
+      }
     },
     "collation": {
       "type": "string",
