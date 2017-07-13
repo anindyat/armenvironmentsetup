@@ -35,6 +35,7 @@
     <None Include="G3MSEnvironment.json" />
     <None Include="G3MSEnvironment.prod.emea.parameters.json" />
     <None Include="Deploy-AzureWebApp.ps1" />
+    <None Include="UpdateConfig.ps1" />
   </ItemGroup>
   <Target Name="GetReferenceAssemblyPaths" />
 </Project>
