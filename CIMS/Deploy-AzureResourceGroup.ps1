@@ -11,9 +11,9 @@ Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupLocation, #The location where the Resource Group will be created
     [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationDeployment = "BOTH",
     [string] $CIMSTemplateFile = 'CIMSEnvironment.json',
-    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.prod.emea.parameters.json',
+    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.env.location.parameters.json',
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
-    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.prod.emea.parameters.json',
+    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.env.location.parameters.json',
 	[boolean] $IsPublishCode = ($false),
 	[string] $CIMSWebAppDirectory = "",
 	[string] $G3MSWebAppDirectory = "",

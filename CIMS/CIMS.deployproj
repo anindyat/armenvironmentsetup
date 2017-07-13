@@ -31,9 +31,9 @@
     </None>
     <Content Include="Deploy-AzureResourceGroup.ps1" />
     <Content Include="CIMSEnvironment.json" />
-    <Content Include="CIMSEnvironment.prod.emea.parameters.json" />
+    <Content Include="CIMSEnvironment.env.location.parameters.json" />
     <None Include="G3MSEnvironment.json" />
-    <None Include="G3MSEnvironment.prod.emea.parameters.json" />
+    <None Include="G3MSEnvironment.env.location.parameters.json" />
     <None Include="Deploy-AzureWebApp.ps1" />
     <None Include="UpdateConfig.ps1" />
   </ItemGroup>
