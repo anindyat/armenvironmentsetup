@@ -20,6 +20,7 @@ $url = $xml.SelectNodes("//publishProfile[@publishMethod=`"FTP`"]/@publishUrl").
 # Upload files recursively 
 Set-Location $AppDirectory
 $webclient = New-Object -TypeName System.Net.WebClient
+$webclient.Proxy = null
 $webclient.Credentials = New-Object System.Net.NetworkCredential($username,$password)
 $files = Get-ChildItem -Path $appdirectory -Recurse #Removed IsContainer condition
 foreach ($file in $files)
@@ -33,6 +34,7 @@ foreach ($file in $files)
 		"------For Directory " + $file.Name + "---------"
         $uri.AbsolutePath + "is Directory"
         $ftprequest = [System.Net.FtpWebRequest]::Create($uri);
+		$ftprequest.Proxy = null
         $ftprequest.Method = [System.Net.WebRequestMethods+Ftp]::MakeDirectory
         $ftprequest.UseBinary = $true
 
