@@ -10,13 +10,17 @@ Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupName, #The place where resources will be listed
     [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationDeployment = "BOTH",
     [string] $CIMSTemplateFile = 'CIMSEnvironment.json',
-    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.env.location.parameters.json',
+    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.stag.emea.parameters.json',
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
-    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.env.location.parameters.json',
+    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.dev.naa.parameters.json',
 	[boolean] $IsPublishCode = ($false),
 	[string] $CIMSWebAppDirectory = "",
 	[string] $G3MSWebAppDirectory = "",
-	[string] $G3MSWebUIDirectory= ""
+	[string] $G3MSWebUIDirectory= "",
+    [boolean] $IsCIMSSqlDep = ($false),
+    [boolean] $IsG3MSSqlDep = ($false),
+    [string] $CIMSSqlScriptDirectory = "", #E:\Otis\Databases-WithDeploymentScript\Databases\Databases
+    [string] $G3MSSqlScriptDirectory = ""
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
@@ -67,7 +71,17 @@ if($resourceGroupNameResult -ne $null)
 		-WebAppName $CIMSWebAppName `
 		-ResourceGroupName $ResourceGroupName
 		}
+
+    #Deploys CIMS SQL Script
+    if($IsCIMSSqlDep){
+    $CIMS_SqlServerObj  = Find-AzureRmResource -ResourceType "microsoft.sql/servers" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
+
+    $CIMS_DatabaseObj= Find-AzureRmResource -ResourceType "microsoft.sql/servers/databases" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
+
+    $ScriptPath = Split-Path $MyInvocation.InvocationName
+    & "$ScriptPath\Deploy-AzureSQL.CIMS.ps1" -DBServer $CIMS_SqlServerObj.Name -DBName $CIMS_DatabaseObj.Name -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $CIMSSqlScriptDirectory
 	}
+}
 
 	#Deploys the G3MS template
 	if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
