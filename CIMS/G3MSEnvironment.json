@@ -4,10 +4,10 @@
   "parameters": {
     "environmentType": {
       "type": "string",
-      "defaultValue": "basic",
+      "defaultValue": "Basic",
       "allowedValues": [
-        "basic",
-        "prod"
+        "Basic",
+        "Prod"
       ]
     },
     "environmentName": {
@@ -22,9 +22,9 @@
     },
     "otisTargetRegion": {
       "type": "string",
-      "defaultValue": "US",
+      "defaultValue": "NAA",
       "allowedValues": [
-        "US",
+        "NAA",
         "EMEA",
         "EU",
         "CA"
@@ -202,12 +202,12 @@
   },
   "variables": {
     "iotHubEnvironmentSettings": {
-      "basic": {
+      "Basic": {
         "iotName": "S1",
         "iotTier": "Standard",
         "iotCapacity": 1
       },
-      "prod": {
+      "Prod": {
         "iotName": "S1",
         "iotTier": "Standard",
         "iotCapacity": 1
@@ -215,34 +215,34 @@
     },
     "currentIOTHubEnvironmentSettings": "[variables('iotHubEnvironmentSettings')[parameters('environmentType')]]",
     "sqlEnvironmentSettings": {
-      "basic": {
+      "Basic": {
         "sqlEdition": "Basic",
         "sqlRequestedServiceObjectiveName": "Basic"
       },
-      "prod": {
+      "Prod": {
         "sqlEdition": "Standard",
         "sqlRequestedServiceObjectiveName": "S2"
       }
     },
     "currentSQLEnvironmentSettings": "[variables('sqlEnvironmentSettings')[parameters('environmentType')]]",
     "serviceBusEnvironmentSettings": {
-      "basic": {
+      "Basic": {
         "serviceBusName": "Basic",
         "serviceBusTier": "Basic"
       },
-      "prod": {
+      "Prod": {
         "serviceBusName": "Standard",
         "serviceBusTier": "Standard"
       }
     },
     "currentServiceBusEnvironmentSettings": "[variables('serviceBusEnvironmentSettings')[parameters('environmentType')]]",
     "redisCacheSettings": {
-      "basic": {
+      "Basic": {
         "redisCapacity": 1,
         "redisFamily": "C",
         "redisName": "Basic"
       },
-      "prod": {
+      "Prod": {
         "redisCapacity": 1,
         "redisFamily": "C",
         "redisName": "Standard"
@@ -250,11 +250,11 @@
     },
     "currentRedisCacheSettings": "[variables('redisCacheSettings')[parameters('environmentType')]]",
     "webAppSettings": {
-      "basic": {
+      "Basic": {
         "webAppCapacity": 1,
         "webAppName": "B1"
       },
-      "prod": {
+      "Prod": {
         "webAppCapacity": 1,
         "webAppName": "S1"
       }

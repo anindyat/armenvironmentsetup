@@ -25,11 +25,13 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
+    <None Include="G3MSEnvironment.dev.naa.parameters.json" />
+    <None Include="CIMSEnvironment.stag.emea.parameters.json" />
     <None Include="Deploy-AzureWebJob.ps1" />
     <None Include="Deployment.targets">
       <Visible>False</Visible>
     </None>
-    <Content Include="Deploy-AzureResourceGroup.ps1" />
+    <Content Include="Deploy-EnvironmentResources.ps1" />
     <Content Include="CIMSEnvironment.json" />
     <Content Include="CIMSEnvironment.env.location.parameters.json" />
     <None Include="G3MSEnvironment.json" />

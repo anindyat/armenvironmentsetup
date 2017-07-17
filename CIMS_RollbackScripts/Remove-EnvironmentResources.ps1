@@ -7,8 +7,7 @@ Param(
     [string] [Parameter(Mandatory=$true)] $ApplicationSecret, #The "secret" key created for the application
     [string] [Parameter(Mandatory=$true)] $AadDirectoryId, #The Azure Active Directory ID
     [string] [Parameter(Mandatory=$true)] $ResourceGroupName, #The place where resources will be deleted from
-    [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationRemoval = "BOTH",
-    [string] $RGCleanupTemplateFile = '../CIMS_RollbackScripts/azuredeploy.json'
+    [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationRemoval = "BOTH"
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
