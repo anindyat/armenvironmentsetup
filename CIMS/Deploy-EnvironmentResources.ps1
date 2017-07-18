@@ -125,7 +125,7 @@ if($resourceGroupNameResult -ne $null)
     #Else, one of the template or parameter files are missing
     else
     {
-        throw "Missing template or parameter file." 
+        "Missing template or parameter file." 
     }
 }
 else
