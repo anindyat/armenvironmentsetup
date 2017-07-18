@@ -269,6 +269,8 @@
     "redisCacheName": "[concat('RC-',variables('resourceNameSuffix'))]",
     "serviceBusNamespaceName": "[concat('SB-',parameters('environmentName'),'-OtisCloud-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]",
     "TopicNames": "Topic-CIMS",
+    "EndpointNames": "Endpoint-CIMS",
+    "RouteNames": "Route-CIMS",
     "iotApiVersion": "2016-02-03",
     "iotHubName": "[concat('IH-',parameters('environmentName'),'-OtisCloud-',parameters('otisTargetRegion'),'-', uniqueString(resourceGroup().id))]"
   },
@@ -630,6 +632,40 @@
           "events": {
             "retentionTimeInDays": "[parameters('d2cMessageRetentionInDaysPeriod')]",
             "partitionCount": "[parameters('d2cPartitionCount')]"
+          }
+        },
+        "routing": {
+          "endpoints": {
+            "serviceBusQueues": [],
+            "serviceBusTopics": [
+              {
+                "connectionString": "[concat(listKeys(resourceId(concat('Microsoft.ServiceBus/namespaces/AuthorizationRules'),variables('serviceBusNamespaceName'),'RootManageSharedAccessKey'),'2015-08-01').primaryConnectionString,';EntityPath=',variables('TopicNames'))]",
+                "name": "[variables('EndpointNames')]",
+                "subscriptionId": "[subscription().subscriptionId]",
+                "resourceGroup": "[resourceGroup().name]"
+              }
+            ],
+            "eventHubs": []
+          },
+          "routes": [
+            {
+              "name": "[variables('RouteNames')]",
+              "source": "DeviceMessages",
+              "condition": "level=\"critical\"",
+              "endpointNames": [
+                "[variables('EndpointNames')]"
+              ],
+              "isEnabled": true
+            }
+          ],
+          "fallbackRoute": {
+            "name": "$fallback",
+            "source": "DeviceMessages",
+            "condition": "true",
+            "endpointNames": [
+              "events"
+            ],
+            "isEnabled": true
           }
         },
         "cloudToDevice": {

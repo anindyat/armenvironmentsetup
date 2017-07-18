@@ -10,26 +10,23 @@ Param(
     [string] [Parameter(Mandatory=$true)] $ResourceGroupName, #The place where resources will be listed
     [string] [Parameter(Mandatory=$false)][validateSet('CIMS', 'G3MS', 'BOTH')] $ApplicationDeployment = "BOTH",
     [string] $CIMSTemplateFile = 'CIMSEnvironment.json',
-    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.env.location.parameters.json',
+    [string] $CIMSTemplateParametersFile = 'CIMSEnvironment.stag.emea.parameters.json',
     [string] $G3MSTemplateFile = 'G3MSEnvironment.json',
-    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.env.location.parameters.json',
+    [string] $G3MSTemplateParametersFile = 'G3MSEnvironment.dev.naa.parameters.json',
 	[boolean] $IsPublishCode = ($false),
 	[string] $CIMSWebAppDirectory = "",
 	[string] $G3MSWebAppDirectory = "",
-	[string] $G3MSWebUIDirectory= ""
+	[string] $G3MSWebUIDirectory= "",
+    [boolean] $IsCIMSSqlDep = ($false),
+    [boolean] $IsG3MSSqlDep = ($false),
+    [string] $CIMSSqlScriptDirectory = "", #E:\Otis\Databases-WithDeploymentScript\Databases\Databases
+    [string] $G3MSSqlScriptDirectory = ""
 )
 
 #No restrictions; all Windows PowerShell scripts can be run
 Set-ExecutionPolicy Unrestricted
 
 $ScriptRoot = (Split-Path -parent $MyInvocation.MyCommand.Definition)
-
-#Sets True or False if each of the files exists
-$CIMSTemplateExists = Test-Path $CIMSTemplateFile
-$G3MSTemplateExists = Test-Path $G3MSTemplateFile
-$CIMSParametersExists = Test-Path $CIMSTemplateParametersFile
-$G3MSParametersExists = Test-Path $G3MSTemplateParametersFile
-$EnvironmentFilesExist = $CIMSTemplateExists -and $G3MSTemplateExists -and $CIMSParametersExists -and $G3MSParametersExists
 
 #CIMS-related output files
 $CIMSLogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
@@ -56,67 +53,66 @@ if($resourceGroupNameResult -ne $null)
     "ResourceGroup exists $ResourceGroupName"
 
 	$ApplicationDeployment = $ApplicationDeployment.ToUpper()
-    
-    # Check to see if G3MS/CIMS template & parameter files exist
-    if ($EnvironmentFilesExist)
-    {
-	    # Determine which application to deploy
-	    if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
-	    #Deploys the CIMS template
-	    {
-		    New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
-									    -TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
-									    -Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
-		    if ($IsPublishCode){
 
-		    $Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS-API"
-		    $CIMSWebAppName = $Result.Name
+	# Determine which application to deploy
+	if (($ApplicationDeployment -eq "CIMS") -or ($ApplicationDeployment -eq "BOTH"))
+	#Deploys the CIMS template
+	{
+		New-AzureRmResourceGroupDeployment -Name "CIMS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
+									-TemplateFile $CIMSTemplateFile -TemplateParameterFile $CIMSTemplateParametersFile `
+									-Force -Verbose 2>> $CIMSErrorFileName | Out-File $CIMSLogFileName -ErrorVariable ErrorMessages
+		if ($IsPublishCode){
 
-	    & "$ScriptRoot\Deploy-AzureWebApp.ps1" `
-		    -AppDirectory $CIMSWebAppDirectory `
-		    -WebAppName $CIMSWebAppName `
-		    -ResourceGroupName $ResourceGroupName
-		    }
-	    }
+		$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS-API"
+		$CIMSWebAppName = $Result.Name
 
-	    #Deploys the G3MS template
-	    if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
-	    {
-		    New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
-									    -TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
-									    -Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages
-	    if ($IsPublishCode){
+	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+		-AppDirectory $CIMSWebAppDirectory `
+		-WebAppName $CIMSWebAppName `
+		-ResourceGroupName $ResourceGroupName
+		}
 
-		    $Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS-API"
-		    $G3MSWebAppName = $Result.Name
-
-		    $Result1  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS-UI"
-		    $G3MSWebUIName = $Result.Name
-
-	    & "$ScriptRoot\Deploy-AzureWebApp.ps1" `
-		    -AppDirectory $G3MSWebAppDirectory `
-		    -WebAppName $G3MSWebAppName `
-		    -ResourceGroupName $ResourceGroupName
-
-	    & "$ScriptRoot\Deploy-AzureWebApp.ps1" `
-		    -AppDirectory $G3MSWebUIDirectory `
-		    -WebAppName $G3MSWebUIName `
-		    -ResourceGroupName $ResourceGroupName
-
-		    }
-	
-	    } 
-    }
-
-    #Else, one of the template or parameter files are missing
-    else
-    {
-        throw "Missing template or parameter file." 
-    }
+    #Deploys CIMS SQL Script
+    if($IsCIMSSqlDep){
+		$CIMS_SqlServerObj  = Find-AzureRmResource -ResourceType "microsoft.sql/servers" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
+        $CIMS_DatabaseObj= Find-AzureRmResource -ResourceType "microsoft.sql/servers/databases" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
+        $CIMS_Database=$CIMS_DatabaseObj.Name.Split('/')
+        $CIMS_SqlServerName=$CIMS_SqlServerObj.Name+".database.windows.net"
+        $CIMS_DatabaseName=$CIMS_Database[1].ToString()
+        $ScriptPath = Split-Path $MyInvocation.InvocationName
+        & "$ScriptPath\Deploy-AzureSQL.CIMS.ps1" -DBServer $CIMS_SqlServerName -DBName $CIMS_DatabaseName -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $CIMSSqlScriptDirectory  
+	}
 }
 
-#Else, the resource group doesn't exist and needs to be created before redeploying this script
+	#Deploys the G3MS template
+	if (($ApplicationDeployment -eq "G3MS") -or ($ApplicationDeployment -eq "BOTH"))
+	{
+		New-AzureRmResourceGroupDeployment -Name "G3MS-$(get-date -f yyyy-MM-ddTHH-mm-ss)" -ResourceGroupName $ResourceGroupName `
+									-TemplateFile $G3MSTemplateFile -TemplateParameterFile $G3MSTemplateParametersFile `
+									-Force -Verbose 2>> $G3MSErrorFileName | Out-File $G3MSLogFileName -ErrorVariable ErrorMessages
+	if ($IsPublishCode){
+
+		$Result  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS-API"
+		$G3MSWebAppName = $Result.Name
+
+		$Result1  = Find-AzureRmResource -ResourceType "microsoft.web/sites" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS-UI"
+		$G3MSWebUIName = $Result.Name
+
+	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+		-AppDirectory $G3MSWebAppDirectory `
+		-WebAppName $G3MSWebAppName `
+		-ResourceGroupName $ResourceGroupName
+
+	& "$ScriptRoot\Deploy-AzureWebApp.ps1" `
+		-AppDirectory $G3MSWebUIDirectory `
+		-WebAppName $G3MSWebUIName `
+		-ResourceGroupName $ResourceGroupName
+
+		}
+	
+	} 
+}
 else
 {
-    throw "Resource Group " + $ResourceGroupName + " Not Found."
+    "Resource Group " + $ResourceGroupName + " Not Found"
 }
