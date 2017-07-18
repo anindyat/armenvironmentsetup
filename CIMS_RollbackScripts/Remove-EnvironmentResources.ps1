@@ -15,6 +15,10 @@ Set-ExecutionPolicy Unrestricted
 
 $ScriptRoot = (Split-Path -parent $MyInvocation.MyCommand.Definition)
 
+#Output files
+$LogFileName = ".\CIMS_log-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
+$ErrorFileName = ".\CIMS_error-$(get-date -f yyyy-MM-ddTHH-mm-ss).txt"
+
 #Clear Cached Credentials 
 Get-AzureAccount | ForEach-Object { Remove-AzureAccount $_.ID -Force } 
 
@@ -33,16 +37,14 @@ if($resourceGroupNameResult -ne $null)
     # Encloses the resource types into an array in the order in which they should be deleted
     # Handles dependency-related issues - Ex: You must delete a Web App before you can delete an App Service Plan
 	@(
-        'Microsoft.Cache/Redis/'
+        'Microsoft.Cache/Redis'
         'Microsoft.ServiceBus/namespaces/topics'
-        'Microsoft.ServiceBus/namespaces/'
+        'Microsoft.ServiceBus/namespaces'
         'Microsoft.Insights/alertrules/CPUHigh'
-        'Microsoft.Insights/alertrules/ForbiddenRequests'
         'Microsoft.Insights/alertrules/ForbiddenRequests'
         'Microsoft.Insights/alertrules/LongHttpQueue'
         'Microsoft.Insights/alertrules/ServerErrors'
         'Microsoft.Insights/autoscalesettings'
-        'Microsoft.Insights/components'
         'Microsoft.Sql/servers/databases'
         'Microsoft.Sql/servers'
         'Microsoft.Web/sites'
@@ -67,10 +69,10 @@ if($resourceGroupNameResult -ne $null)
         # Removes all CIMS resources
         if (($ApplicationRemoval -eq "CIMS") -or ($ApplicationRemoval -eq "BOTH"))
         {
-            $resources | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName } | Where-Object { $_.ResourceName -match "CIMS" } | % { 
-                Write-Host ('Processing {0}/{1}' -f $_.ResourceType, $_.ResourceName)
-                $_ | Remove-AzureRmResource -Verbose -Force
-            }
+                $resources | Where-Object { $_.ResourceGroupName -eq $ResourceGroupName } | Where-Object { $_.ResourceName -match "CIMS" } | % { 
+                    Write-Host ('Processing {0}/{1}' -f $_.ResourceType, $_.ResourceName)
+                    $_ | Remove-AzureRmResource -Verbose -Force
+                }
         }
 
         # Removes all G3MS resources

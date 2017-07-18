@@ -227,12 +227,12 @@
     "currentSQLEnvironmentSettings": "[variables('sqlEnvironmentSettings')[parameters('environmentType')]]",
     "serviceBusEnvironmentSettings": {
       "Basic": {
-        "serviceBusName": "Basic",
-        "serviceBusTier": "Basic"
-      },
-      "Prod": {
         "serviceBusName": "Standard",
         "serviceBusTier": "Standard"
+      },
+      "Prod": {
+        "serviceBusName": "Premium",
+        "serviceBusTier": "Premium"
       }
     },
     "currentServiceBusEnvironmentSettings": "[variables('serviceBusEnvironmentSettings')[parameters('environmentType')]]",
