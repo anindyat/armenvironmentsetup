@@ -74,12 +74,13 @@ if($resourceGroupNameResult -ne $null)
 
     #Deploys CIMS SQL Script
     if($IsCIMSSqlDep){
-    $CIMS_SqlServerObj  = Find-AzureRmResource -ResourceType "microsoft.sql/servers" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
-
-    $CIMS_DatabaseObj= Find-AzureRmResource -ResourceType "microsoft.sql/servers/databases" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
-
-    $ScriptPath = Split-Path $MyInvocation.InvocationName
-    & "$ScriptPath\Deploy-AzureSQL.CIMS.ps1" -DBServer $CIMS_SqlServerObj.Name -DBName $CIMS_DatabaseObj.Name -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $CIMSSqlScriptDirectory
+		$CIMS_SqlServerObj  = Find-AzureRmResource -ResourceType "microsoft.sql/servers" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
+        $CIMS_DatabaseObj= Find-AzureRmResource -ResourceType "microsoft.sql/servers/databases" -ResourceGroupName $ResourceGroupName -ResourceNameContains "CIMS"
+        $CIMS_Database=$CIMS_DatabaseObj.Name.Split('/')
+        $CIMS_SqlServerName=$CIMS_SqlServerObj.Name+".database.windows.net"
+        $CIMS_DatabaseName=$CIMS_Database[1].ToString()
+        $ScriptPath = Split-Path $MyInvocation.InvocationName
+        & "$ScriptPath\Deploy-AzureSQL.CIMS.ps1" -DBServer $CIMS_SqlServerName -DBName $CIMS_DatabaseName -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $CIMSSqlScriptDirectory  
 	}
 }
 
