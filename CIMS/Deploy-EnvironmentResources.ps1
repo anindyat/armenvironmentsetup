@@ -89,7 +89,7 @@ if($resourceGroupNameResult -ne $null)
             $CIMS_SqlServerName=$CIMS_SqlServerObj.Name+".database.windows.net"
             $CIMS_DatabaseName=$CIMS_Database[1].ToString()
             $ScriptPath = Split-Path $MyInvocation.InvocationName
-            & "$ScriptPath\Deploy-AzureSQL.CIMS.ps1" -DBServer $CIMS_SqlServerName -DBName $CIMS_DatabaseName -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $CIMSSqlScriptDirectory  
+            & "$ScriptPath\Deploy-AzureSQL.ps1" -DBServer $CIMS_SqlServerName -DBName $CIMS_DatabaseName -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $CIMSSqlScriptDirectory  
 	    }
     }
 
@@ -118,6 +118,16 @@ if($resourceGroupNameResult -ne $null)
 		    -ResourceGroupName $ResourceGroupName
 
 		    }
+        #Deploys G3MS SQL Script
+        if($IsG3MSSqlDep){
+		    $G3MS_SqlServerObj  = Find-AzureRmResource -ResourceType "microsoft.sql/servers" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS"
+            $G3MS_DatabaseObj= Find-AzureRmResource -ResourceType "microsoft.sql/servers/databases" -ResourceGroupName $ResourceGroupName -ResourceNameContains "G3MS"
+            $G3MS_Database=$G3MS_DatabaseObj.Name.Split('/')
+            $G3MS_SqlServerName=$G3MS_SqlServerObj.Name+".database.windows.net"
+            $G3MS_DatabaseName=$G3MS_Database[1].ToString()
+            $ScriptPath = Split-Path $MyInvocation.InvocationName
+            & "$ScriptPath\Deploy-AzureSQL.ps1" -DBServer $G3MS_SqlServerName -DBName $G3MS_DatabaseName -DBUserName otisadmin -DBPassword 'P@$$w0rd' -DBScriptsPath $G3MSSqlScriptDirectory  
+	    }
 	
 	    } 
     }
