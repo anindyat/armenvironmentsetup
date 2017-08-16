@@ -25,8 +25,7 @@
   <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
   <!-- vertag<:>end -->
   <ItemGroup>
-    <None Include="Deploy-AzureSQL.G3MS.ps1" />
-    <None Include="Deploy-AzureSQL.CIMS.ps1" />
+    <None Include="Deploy-AzureSQL.ps1" />    
     <None Include="G3MSEnvironment.dev.naa.parameters.json" />
     <None Include="CIMSEnvironment.stag.emea.parameters.json" />
     <None Include="Deploy-AzureWebJob.ps1" />
